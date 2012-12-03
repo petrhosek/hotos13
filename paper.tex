@@ -1,5 +1,40 @@
-\documentclass[11pt,twocolumn]{article}
+% rubber: bibtex.crossrefs 10000
+\documentclass[twocolumn,10pt]{article}
+
+%
+% Standard packages.
+%
 \usepackage{xspace}
+\usepackage{color}
+\usepackage{times}
+\usepackage{fullpage}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{multirow}
+\usepackage{flushend}
+\usepackage{textcomp}
+
+\usepackage{listings}
+\lstset{
+  language=C,
+  captionpos=b,
+  basicstyle=\scriptsize\ttfamily,
+  commentstyle=\textit,
+  keywordstyle=\bfseries,
+  numbers=left,
+  numberstyle=\tiny,
+  numbersep=5pt,
+  escapeinside={/*@}{@*/},
+  tabsize=2,
+  breaklines=true,
+  extendedchars=true,
+  columns=fullflexible,
+  xleftmargin=16pt,
+  showspaces=false,
+  showtabs=false,
+  showstringspaces=false,
+}
+
 %
 % Standard margin stuff.  US letter.
 %
@@ -10,36 +45,66 @@
 \setlength{\textheight}{8.5in}% 11in - 2x1in margins - .5 for page number
 \setlength{\textwidth}{6.5in} % 8.5in - 2x1in margins
 
+\newcommand{\textstt}[1]{{\small \texttt{#1}}\xspace}
+\newcommand{\textssc}[1]{{\small \textsc{#1}}\xspace}
+
+\newcommand{\todo}[1]{\noindent{\color{red}[{\bf todo:} #1]}}
+\newcommand{\sidenote}[1]{{\marginpar{\bf\color{red}[#1]}}}
+\newcommand{\gap}[2]{\uline{#1} \noindent{\color{red}[#2]}}
+
+\newenvironment{structure}{\color{blue}
+\begin{list}{\labelitemi}{\leftmargin=1em}{%
+\setlength{\topsep}{0pt}\setlength{\itemsep}{0pt}\setlength{\parsep}{0pt}}}
+{\end{list}}
+
+\newenvironment{structure*}{\color{blue}
+\begin{enumerate}\setlength{\topsep}{0pt}\setlength{\itemsep}{0pt}\setlength{\parsep}{0pt}}
+{\end{enumerate}}
+
+\newcommand{\ie}{\emph{i.e.},\ }
+\newcommand{\eg}{\emph{e.g.},\ }
+\newcommand{\etal}{\emph{et al.}\ }
+\newcommand{\vs}{\emph{vs.}\ }
+\newcommand{\etc}{\emph{etc.}\ }
+
 \begin{document}
-\title{HotOS-13 Submission\\Something Something Lorem Ipsum}
-\author{\begin{tabular}[h]{c}Petr Ho\v{s}ek
-    \\ \texttt{petrhosek@gmail.com}\end{tabular}
-  \and \begin{tabular}[h]{c}Bennet Yee \\
-    \texttt{bsy@google.com}\end{tabular}}
+
+\title{\bf Micro-kernel in the User-space}
+\author{
+Petr Hosek\\\textit{Imperial College London}
+\and Bennet Yee\\\textit{Google Inc}
+}
+\date{}
 \maketitle
-\section*{Abstract}
+\thispagestyle{empty}
 
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+\begin{abstract}
+Paper summary \ldots
+\end{abstract}
 
+\section{Introduction}
+\label{sec:intro}
+\input{intro}
 
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+\section{Overview}
+\label{sec:overview}
+\input{overview}
 
-\section{The Problem}
+\section{Prototype}
+\label{sec:prototype}
+\input{prototype}
 
+\section{Related Work}
+\label{sec:related}
+\input{related}
 
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+\section{Conclusion}
+\label{sec:conclusion}
+\input{conclusion}
 
-
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-
-\section{The Solution}
-
-Aqueous sodium chloride, NaCl (aq), does not perform as well as
-hydrofluoric acid as a solvent.
+{
+  \bibliographystyle{abbrv}
+  \bibliography{macros,references,crossreferences}
+}
 
 \end{document}

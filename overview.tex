@@ -1,0 +1,19 @@
+\begin{structure}
+  \item What is NaCl and how does it work?
+  \item NaCl architecture and components (with figure)
+  \item Process support issues (\eg no fork on Windows)
+  \item Proposed approach with process service
+  \item Memory sharing between processes
+  \item Memory service design
+\end{structure}
+
+Native Client, commonly abbreviated ``NaCl'' when used as an adjective,
+is an open-source production-quality SFI-based sandbox for the safe
+execution of untrusted, multi-threaded user-level machine
+code~\cite{yee:ieee-sp09,sehr:usenix-sec10,ansel:pldi11}. While
+primarily aimed towards executing native compiled code inside the web
+browser, the NaCl core components can be also used as
+general-purpose sandbox.
+
+NaCl architecture, depicted in Figure \ldots largely resemebles
+existing monolithic- and micro-kernel design.

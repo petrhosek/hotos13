@@ -1,0 +1,23 @@
+\begin{structure}
+  \item Full virtualization and para-virtualization are too heavyweight
+  \item SFI sandbox as lightweight replacement providing isolation,
+    security and portability
+  \item Missing process abstraction and the solution
+\end{structure}
+
+In recent years, we have witnessed a boom of virtualization. Most of the
+servier infrastructure which is now being used is running virtualized.
+However, virtualization still failed to attract desktop market despite
+obvious advantages such as portability, security, reliability and
+isolation. We believe this is because the existing virtualization
+solutions are too heavyweight and cumbersome. They allow to run entire
+operating system which is suitable for infrastructure provisioning in
+data center and cloud applications, but is simply too cumbersome for
+desktop and client applications.
+
+In this paper, we propose more lightweight alternative. Instead of
+running full operating system kernel, our goal is to combine
+micro-kernel design with software fault isolation techniques to provide
+lightweight solution for virtualization of existing applications in the
+user space.  Furthemore, our proposed approach allows applications to be
+run on top of three major operating system without recompilation.
