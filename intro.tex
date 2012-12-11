@@ -1,3 +1,6 @@
+\section{Introduction}
+\label{sec:intro}
+
 \begin{structure}
   \item Full virtualization and para-virtualization are too heavyweight
   \item SFI sandbox as lightweight replacement providing isolation,
@@ -15,9 +18,15 @@ operating system which is suitable for infrastructure provisioning in
 data center and cloud applications, but is simply too cumbersome for
 desktop and client applications.
 
-In this paper, we propose more lightweight alternative. Instead of
+In this paper, we propose a more lightweight alternative. Instead of
 running full operating system kernel, our goal is to combine
 micro-kernel design with software fault isolation techniques to provide
 lightweight solution for virtualization of existing applications in the
 user space.  Furthemore, our proposed approach allows applications to be
 run on top of three major operating system without recompilation.
+
+The rest of this paper is organized as follows.
+Section~\ref{sec:overview} gives an overview of our approach, \ldots.
+Then, Section~\ref{sec:prototype} presents \ldots. Finally,
+Section~\ref{sec:related} discusses related work and
+Section~\ref{sec:conclusion} concludes.

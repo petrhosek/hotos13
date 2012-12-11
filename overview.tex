@@ -1,3 +1,6 @@
+\section{Overview}
+\label{sec:overview}
+
 \begin{structure}
   \item What is NaCl and how does it work?
   \item NaCl architecture and components (with figure)
@@ -12,14 +15,113 @@ is an open-source production-quality SFI-based sandbox for the safe
 execution of untrusted, multi-threaded user-level machine
 code~\cite{yee:ieee-sp09,sehr:usenix-sec10,ansel:pldi11}. While
 primarily aimed towards executing native compiled code inside the web
-browser, the NaCl core components can be also used as
+browser, the NaCl core components can be also used as a
 general-purpose sandbox.
 
-NaCl architecture, depicted in Figure \ldots largely resemebles
-existing monolithic- and micro-kernel design.
+\begin{figure}
+\centering
+%\includegraphics{architecture}
+\caption{Overview of core NaCl components}
+\label{fig:architecture}
+\end{figure}
+
+
+The NaCl architecture, depicted in Figure~\ref{fig:architecture},
+comprises of many different components resembling different components
+of an operating system. The component which fulfills the role of kernel
+is the \emph{service runtime}.
+% largely resembles existing monolithic and micro-kernel design.
+The service runtime is a native executable which provides resource
+abstractions to isolate NaCl applications from host resources and
+underlying operating system interfaces. Even though it shares a process
+with the contained NaCl module, the service runtime prevents untrusted
+code from inappropriate accesses using a combination of various
+techniques which differ for various target
+architectures~\cite{yee:ieee-sp09,sehr:usenix-sec10}. The service
+runtime trusted code and data are only accessible through a controlled
+interface.
+
+While NaCl already resembles existing monolithic and micro-kernel
+designs providing facilities such as multi-threading and virtual memory
+management, it lacks two important features, process management and
+shared memory. \todo{Not sure whether shared memory really that
+important?}
 
 \todo{Explain how the NaCl architecture compares with on-the-metal
   micro-kernel designs, viz: Native Client is on top of an existing
   monolithic kernel, so the various microkernel-related overheads
   (context switch, etc) still exist.  The benefits are structural:
   easier replacement of components/modules, easier security audits.}
+
+\subsection{Process Support}
+\label{sub:process_support}
+
+While existing NaCl implementation already provides thread support,
+exposed through a subset of the POSIX threads interface, it is missing
+process management support. The process support is necessary in cases
+when resource sharing, in particular of virtual memory, is not desired.
+
+The process support is important for certain set of applications such
+as interactive shells. These shells typically rely on \textstt{fork} to
+spawn new application processes. 
+
+\todo{This introduction is not particularly amazing.}
+
+The NaCl Application Binary Interface (ABI) exposed to untrusted code is
+modeled after POSIX ABI. This makes it easy to port existing POSIX
+application over to NaCl with minimal or no changes at all.
+% Service runtime provides a subset of the POSIX threads interface as
+% well as common POSIX ﬁle I/O interface.
+
+Therefore, following the same philosophy, our main goal when designing
+the process support for NaCl was to provide an equivalent of the POSIX
+\textstt{fork} system call. However, there are two challenges.
+
+First, the process support has to be portable. Native Client executable
+can be run on any supported platform without recompilation (as long as
+the architecture remains the same). This means that process support can
+only rely on a common denominator of the functionality provided by the
+supported underlying operating systems (\ie Windows, Linux and OS X).
+
+Different operating systems provide different process creation
+primitives. For example, while operating systems from the UNIX family
+typically use the \textstt{fork} semantics, Windows family operating
+systems provide \textstt{spawn} facilities. Even though POSIX
+specification provides both \textstt{fork} and \textstt{posix\_spawn},
+only OS X as fully POSIX conformant provides both primitives.
+
+Second, the process support needs to have a clear semantics. This is an
+issue with \textstt{fork} operation which is supposed to create the
+exact copy the existing process. However, when using a \textstt{fork}
+with multi-threaded program, we might end up in an inconsistent state
+since only the thread invoking \textstt{fork} is cloned.
+
+This problem is even worse in case of NaCl service runtime which shares
+the process with untrusted code and uses automatic resource management
+to increase reliability of resource (de)allocation. However, if we use
+the \textstt{fork} system call to create a copy of the existing process,
+the bookkeeping information will become invalid (\eg memory mappings,
+descriptors, locks) leading to potentially inconsistent state.
+
+To address these challenges, instead of providing the
+\textstt{fork}-like facility, we have decided to provide set of basic
+primitives which can be used to construct the new process in truly
+micro-kernel fashion, and rely on untrusted libraries to implement the
+\textstt{fork}-like semantics (\eg or different semantics if needed) on
+top of these.
+
+\ldots
+
+Since parent process is responsible for setting up the reverse service
+connection, it can subsume the role of reverse service itself and either
+proxy some of the root reverse service operations or completely replace
+it.
+
+\ldots
+
+Since reverse service is being used for accessing file system \ldots we
+can effectively create a sub-sandbox for the child process. one example
+computational kernel (seccomp).
+
+\subsection{Memory Sharing}
+\label{sub:memory_sharing}
