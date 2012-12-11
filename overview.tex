@@ -125,3 +125,35 @@ computational kernel (seccomp).
 
 \subsection{Memory Sharing}
 \label{sub:memory_sharing}
+
+\begin{itemize}
+\item Memory Service used for fork emulation;
+\item Page protection and user-level exceptions used to detect
+  writes to shared pages to emulate copy-on-write;
+\item Assumes same protection domain, so badly behaving application
+  can only harm themselves.
+\end{itemize}
+
+User-level fork emulation library manages address space.  All memory
+are backed by shared memory, though initially not necessarily actually
+shared.  On fork, new subprocess is created which have special IRT
+that speaks the fork-emulation protocol.  The subprocess receives
+shared memory descriptors and location where they are mapped in the
+parent process.  Both parent and child processes change page
+protection of all pages to read-only to emulate copy-on-write.  On
+fault, affected page is copied to new shared memory, reference count
+to the old page within the original shared memory object is
+decremented, the new shared memory pages mapped in place with writable
+mapping, and the affect thread is continued.  We don't want to have a
+separate shared memory file for every 64KB page (probably too many
+descriptors, filesystem related overhead), so there will be some
+interesting optimizations here: if we shared memory object is multiple
+pages in size, but a ``hole'' in the middle has zero references, how
+do we reclaim the disk / paging space?
+
+Concerns: shared memory is a scarce resource.  /dev/shm is typically a
+small fraction of RAM size.  Threads vs fork -- may need to stop all
+other threads while pages are being manipulated?  On Unices where mmap
+on top of existing mapping is atomic, it may not be necessary; on
+Windows where unmap must occur first and therefore overmapping is not
+atomic, this is likely to be necessary.
