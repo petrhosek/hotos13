@@ -1,11 +1,39 @@
 \section{Related Work}
 \label{sec:related}
 
+Dune~\cite{belay:osdi12} uses virtualization hardware, in particular
+Intel VT-x, to create secure subdomain within a process similarly to
+Native Client which relies entirely on software protection. Both
+systems run on top of existing kernel and could be considered type-2
+hypervisors. The consequence of using virtualization hardware is
+twofold; Dune has slightly better performance overhead, but has very
+limited portability; the current implementation only supports Linux
+running on 64-bit x86 Intel CPUs. Unlike Native Client, which runs
+entirely in user-space, Dune is implemented as a Linux kernel module and
+runs in a priviledged mode. Therefore, its use has larger security and
+administration implications (see Section~\ref{sec:overview}). Dune uses
+standard \lstinline`fork` semantics where newly spawned processes are
+\emph{not} implicitly sandboxed.
+
+User Mode Linux (UML)~\cite{uml:linux} enables Linux kernel to be run as
+an user-space application to create multiple virtual systems. While the
+overall approach is similar to Native Client with each guest process being
+mapped to a single host process and guest kernel being responsible for
+providing resource abstractions, there are significant differences.
+First of all, UML is restricted to Linux with hardware support limited
+to 64-bit Intel x86 CPUs, the support for other hardware platforms is
+unclear. Second, the performance overhead is larger than in case of
+Native Client. Last but not least, the size of Linux kernel code-base is
+several order of magnitudes larger than that of Native Client which
+makes any security audits merely impossible and also significantly
+increases attack space. Moreover, UML does not employ any additional
+security mechanisms and relies entirely on user-space isolation. The
+advantage of UML over Native Client is full compatibility with existing
+applications.
+
 \cite{tanenbaum:osdi01}
 \cite{engler:sosp95}
 \cite{yee:ieee-sp09}
 \cite{sehr:usenix-sec10}
 \cite{ansel:pldi11}
 \cite{donovan:pnacl10}
-\cite{belay:osdi12}
-\cite{uml:linux}
