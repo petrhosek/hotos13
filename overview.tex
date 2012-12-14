@@ -25,33 +25,96 @@ general-purpose sandbox.
 \label{fig:architecture}
 \end{figure}
 
-
 The NaCl architecture, depicted in Figure~\ref{fig:architecture},
 comprises of many different components resembling different components
 of an operating system. The component which fulfills the role of kernel
 is the \emph{service runtime}.
 % largely resembles existing monolithic and micro-kernel design.
+
+Native Client follows micro-kernel design by implementing many aspects
+of the sandbox in terms of services. All services are implemented using
+SRPC (Simple RPC), a simple and secure remote method invocation
+service. SRPC is implemented entirely in untrusted code on top the IMC
+(Inter-Module Communications), Native Client's reliable datagram
+service. SRPC provides a convenient syntax for declaring procedural
+interfaces between NaCl modules, supporting a few basic types (int,
+float, char) as well as arrays in addition to NaCl descriptors.  More
+complex types and pointers are not supported.  External data
+representation strategies can easily be layered on top of SRPC.
+
+%Native Client follows micro-kernel design by implementing many aspects
+%of the sandbox in terms of services. All services are implemented using
+%SRPC (Simple RPC) which \ldots implemented on top of the IMC
+%(Inter-Module Communications). SRPC abstraction is implemented entirely
+%in untrusted code. SRPC provides a convenient syntax for declaring
+%procedural interfaces between NaCl modules, supporting a few basic types
+%(int, float, char) as well as arrays in addition to NaCl descriptors.
+%More complex types and pointers are not supported. External data
+%representation strategies can easily be layered on top of SRPC.
+
+\subsection{Service Runtime}
+
 The service runtime is a native executable which provides resource
 abstractions to isolate NaCl applications from host resources and
 underlying operating system interfaces. Even though it shares a process
 with the contained NaCl module, the service runtime prevents untrusted
 code from inappropriate accesses using a combination of various
-techniques which differ for various target
-architectures~\cite{yee:ieee-sp09,sehr:usenix-sec10}. The service
-runtime trusted code and data are only accessible through a controlled
-interface.
+techniques. % which differ for various target architectures. The service
+% runtime trusted code and data are only accessible through a controlled
+% interface.
 
-While NaCl already resembles existing monolithic and micro-kernel
-designs providing facilities such as multi-threading and virtual memory
-management, it lacks two important features, process management and
-shared memory. \todo{Not sure whether shared memory really that
-important?}
+The service runtime functionality is only accessible through system
+calls which resemble standard kernel system calls by performing a contex
+switch from untrusted to trusted code, even though they use different
+hardware mechanism~\cite{yee:ieee-sp09,sehr:usenix-sec10}. The service
+runtime Application Binary Interface (ABI) exposed to the untrusted code
+is modeled after POSIX ABI and includes subset of the POSIX thread
+interface as well as common POSIX file I/O interfaces. This makes it
+easy to port existing POSIX application over to Native Client with
+minimal or no changes at all.
+
+%While Native Client already resembles existing hybrid kernel design
+%providing facilities such as multi-threading and
+%virtual memory management, it lacks two important features, process
+%management and shared memory. \todo{Not sure whether shared memory
+%really that important?}
 
 \todo{Explain how the NaCl architecture compares with on-the-metal
   micro-kernel designs, viz: Native Client is on top of an existing
   monolithic kernel, so the various microkernel-related overheads
   (context switch, etc) still exist.  The benefits are structural:
   easier replacement of components/modules, easier security audits.}
+
+\subsection{Reverse Service}
+
+% While service runtime is the in-process sandbox enforcing fault
+% isolation and providing facilities such basic IPC (SRPC),
+% virtual memory, resource abstraction or the system call interface, it is
+% the \emph{reverse service} which provides inter-process services such as
+% file access, application IPC or process support.
+
+The \emph{reverse service} represents the embedding interface, providing
+core facilities such as process management, file system access or
+application. IPC % thereby resembling the traditional micro-kernels. 
+The name comes from the fact that unlike other service which act as a
+server, the reverse service starts as a client connecting to a service
+runtime which acts a server and only then is the connection
+\emph{reversed} and reverse service becomes the server. This setup is
+necessary since service runtime is not allowed to establish outside
+connection as one of the security measures.
+
+Each service runtime instance has a connection to reverse service. The
+\emph{initial} service runtime has a connection to the trusted reverse
+service \ldots while child processes might be using a different instance
+of the reverse service. This allows \ldots injecting a proxy which
+intercepts some (or all) calls to the actual reverse service or provide
+entirely different reverse service implementation running in untrusted
+code.
+
+\subsection{Integrated Run-Time}
+
+\todo{Describe the role of IRT. Describe name and kernel services, their
+role.}
 
 \subsection{Process Support}
 \label{sub:process_support}
@@ -62,20 +125,20 @@ process management support. The process support is necessary in cases
 when resource sharing, in particular of virtual memory, is not desired.
 
 The process support is important for certain set of applications such
-as interactive shells. These shells typically rely on \textstt{fork} to
+as interactive shells. These shells typically rely on \lstinline`fork` to
 spawn new application processes. 
 
 \todo{This introduction is not particularly amazing.}
 
 The NaCl Application Binary Interface (ABI) exposed to untrusted code is
 modeled after POSIX ABI. This makes it easy to port existing POSIX
-application over to NaCl with minimal or no changes at all.
+application over to Native Client with minimal or no changes at all.
 % Service runtime provides a subset of the POSIX threads interface as
 % well as common POSIX ﬁle I/O interface.
 
 Therefore, following the same philosophy, our main goal when designing
 the process support for NaCl was to provide an equivalent of the POSIX
-\textstt{fork} system call. However, there are two challenges.
+\lstinline`fork` system call. However, there are two challenges.
 
 First, the process support has to be portable. Native Client executable
 can be run on any supported platform without recompilation (as long as
@@ -85,29 +148,29 @@ supported underlying operating systems (\ie Windows, Linux and OS X).
 
 Different operating systems provide different process creation
 primitives. For example, while operating systems from the UNIX family
-typically use the \textstt{fork} semantics, Windows family operating
-systems provide \textstt{spawn} facilities. Even though POSIX
-specification provides both \textstt{fork} and \textstt{posix\_spawn},
+typically use the \lstinline`fork` semantics, Windows family operating
+systems provide \lstinline`spawn` facilities. Even though POSIX
+specification provides both \lstinline`fork` and \lstinline`posix_spawn`,
 only OS X as fully POSIX conformant provides both primitives.
 
 Second, the process support needs to have a clear semantics. This is an
-issue with \textstt{fork} operation which is supposed to create the
-exact copy the existing process. However, when using a \textstt{fork}
+issue with \lstinline`fork` operation which is supposed to create the
+exact copy the existing process. However, when using a \lstinline`fork`
 with multi-threaded program, we might end up in an inconsistent state
-since only the thread invoking \textstt{fork} is cloned.
+since only the thread invoking \lstinline`fork` is cloned.
 
 This problem is even worse in case of NaCl service runtime which shares
 the process with untrusted code and uses automatic resource management
 to increase reliability of resource (de)allocation. However, if we use
-the \textstt{fork} system call to create a copy of the existing process,
+the \lstinline`fork` system call to create a copy of the existing process,
 the bookkeeping information will become invalid (\eg memory mappings,
 descriptors, locks) leading to potentially inconsistent state.
 
 To address these challenges, instead of providing the
-\textstt{fork}-like facility, we have decided to provide set of basic
+\lstinline`fork`-like facility, we have decided to provide set of basic
 primitives which can be used to construct the new process in truly
 micro-kernel fashion, and rely on untrusted libraries to implement the
-\textstt{fork}-like semantics (\eg or different semantics if needed) on
+\lstinline`fork`-like semantics (\eg or different semantics if needed) on
 top of these.
 
 \ldots
@@ -126,13 +189,13 @@ computational kernel (seccomp).
 \subsection{Memory Sharing}
 \label{sub:memory_sharing}
 
-\begin{itemize}
+\begin{structure}
 \item Memory Service used for fork emulation;
 \item Page protection and user-level exceptions used to detect
   writes to shared pages to emulate copy-on-write;
 \item Assumes same protection domain, so badly behaving application
   can only harm themselves.
-\end{itemize}
+\end{structure}
 
 User-level fork emulation library manages address space.  All memory
 are backed by shared memory, though initially not necessarily actually
