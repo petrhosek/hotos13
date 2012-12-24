@@ -10,6 +10,13 @@
   \item Memory service design
 \end{structure}
 
+%we need to talk about files as a service -- naturally comes up in the
+%microkernel structure stuff -- and how file service handles namespaces
+%but file I/O is essentially native
+
+%and we rely on the underlying OS to do the heavy lifting. but the
+%positioning sounds right.
+
 Native Client, commonly abbreviated ``NaCl'' when used as an adjective,
 is an open-source production-quality SFI-based sandbox for the safe
 execution of untrusted, multi-threaded user-level machine
@@ -17,6 +24,14 @@ code~\cite{yee:ieee-sp09,sehr:usenix-sec10,ansel:pldi11}. While
 primarily aimed towards executing native compiled code inside the web
 browser, the NaCl core components can be also used as a
 general-purpose sandbox.
+
+The goal is to provide full POSIX interface. While Native Client already
+provides a subset of POSIX API including thread interface and common
+file I/O interfaces, it still misses important parts such as process
+support, user management or non-blocking I/O. We believe that it is
+possible to implement the missing functionality using microkernel design
+to provide fast yet portable and safe alternative to the existing VM
+implementations.
 
 \begin{figure}
 \centering
@@ -31,16 +46,28 @@ of an operating system. The component which fulfills the role of kernel
 is the \emph{service runtime}.
 % largely resembles existing monolithic and micro-kernel design.
 
-Native Client follows micro-kernel design by implementing many aspects
+The NaCl architecture resembles existing micro and hybrid kernels.
+However, compared to on-the-metal microkernels, there are number of
+significant differences. First of all, Native Client sits on top of an
+existing monolithic kernel (\ie Linux, OS X or Windows), so the various
+microkernel-related overheads (\eg context switch) still exist.
+
+\todo{Explain how the NaCl architecture compares with on-the-metal
+  micro-kernel designs, viz: Native Client is on top of an existing
+  monolithic kernel, so the various microkernel-related overheads
+  (context switch, etc) still exist.  The benefits are structural:
+  easier replacement of components/modules, easier security audits.}
+
+
+
+Native Client follows microkernel design by implementing many aspects
 of the sandbox in terms of services. All services are implemented using
-SRPC (Simple RPC), a simple and secure remote method invocation
-service. SRPC is implemented entirely in untrusted code on top the IMC
-(Inter-Module Communications), Native Client's reliable datagram
-service. SRPC provides a convenient syntax for declaring procedural
-interfaces between NaCl modules, supporting a few basic types (int,
-float, char) as well as arrays in addition to NaCl descriptors.  More
-complex types and pointers are not supported.  External data
-representation strategies can easily be layered on top of SRPC.
+SRPC (Simple RPC), a simple and basic remote method invocation
+mechanism supporting only basic data types (int, float, char) in
+addition to arrays and internal descriptors. SRPC is implemented
+entirely in untrusted code on top the IMC (Inter-Module Communications),
+Native Client's reliable datagram service. External data representation
+strategies can easily be layered on top of SRPC.
 
 %Native Client follows micro-kernel design by implementing many aspects
 %of the sandbox in terms of services. All services are implemented using
@@ -79,12 +106,6 @@ minimal or no changes at all.
 %management and shared memory. \todo{Not sure whether shared memory
 %really that important?}
 
-\todo{Explain how the NaCl architecture compares with on-the-metal
-  micro-kernel designs, viz: Native Client is on top of an existing
-  monolithic kernel, so the various microkernel-related overheads
-  (context switch, etc) still exist.  The benefits are structural:
-  easier replacement of components/modules, easier security audits.}
-
 \subsection{Reverse Service}
 
 % While service runtime is the in-process sandbox enforcing fault
@@ -111,112 +132,22 @@ intercepts some (or all) calls to the actual reverse service or provide
 entirely different reverse service implementation running in untrusted
 code.
 
-\subsection{Integrated Run-Time}
+\subsection{Integrated Runtime}
+
+Integrated Runtime (IRT) is an untrusted library providing a stable,
+backward compatible interface to NaCl module. IRT ensures that once
+compiled, NaCl module will run forever even with a newer version of NaCl
+runtime. Application programmers do not typically use IRT directly,
+instead they use one of the provided C libraries (Newlib or Glibc) which
+hide away internal details and provide common interface.
+
+Facilities provided to untrusted code may be implemented either as NaCl
+systeem calls or as SRPC services. IRT abstracts these differences and
+provides unified interface. The advantage of using services over system
+calls is extensibility and easier development, the disadvantage is
+primarily performance overhead as each service method invocation
+requires several system calls (\ie sequence of \lstinline`sendmsg`
+/\lstinline`recvmsg` invocations).
 
 \todo{Describe the role of IRT. Describe name and kernel services, their
 role.}
-
-\subsection{Process Support}
-\label{sub:process_support}
-
-While existing NaCl implementation already provides thread support,
-exposed through a subset of the POSIX threads interface, it is missing
-process management support. The process support is necessary in cases
-when resource sharing, in particular of virtual memory, is not desired.
-
-The process support is important for certain set of applications such
-as interactive shells. These shells typically rely on \lstinline`fork` to
-spawn new application processes. 
-
-\todo{This introduction is not particularly amazing.}
-
-The NaCl Application Binary Interface (ABI) exposed to untrusted code is
-modeled after POSIX ABI. This makes it easy to port existing POSIX
-application over to Native Client with minimal or no changes at all.
-% Service runtime provides a subset of the POSIX threads interface as
-% well as common POSIX ﬁle I/O interface.
-
-Therefore, following the same philosophy, our main goal when designing
-the process support for NaCl was to provide an equivalent of the POSIX
-\lstinline`fork` system call. However, there are two challenges.
-
-First, the process support has to be portable. Native Client executable
-can be run on any supported platform without recompilation (as long as
-the architecture remains the same). This means that process support can
-only rely on a common denominator of the functionality provided by the
-supported underlying operating systems (\ie Windows, Linux and OS X).
-
-Different operating systems provide different process creation
-primitives. For example, while operating systems from the UNIX family
-typically use the \lstinline`fork` semantics, Windows family operating
-systems provide \lstinline`spawn` facilities. Even though POSIX
-specification provides both \lstinline`fork` and \lstinline`posix_spawn`,
-only OS X as fully POSIX conformant provides both primitives.
-
-Second, the process support needs to have a clear semantics. This is an
-issue with \lstinline`fork` operation which is supposed to create the
-exact copy the existing process. However, when using a \lstinline`fork`
-with multi-threaded program, we might end up in an inconsistent state
-since only the thread invoking \lstinline`fork` is cloned.
-
-This problem is even worse in case of NaCl service runtime which shares
-the process with untrusted code and uses automatic resource management
-to increase reliability of resource (de)allocation. However, if we use
-the \lstinline`fork` system call to create a copy of the existing process,
-the bookkeeping information will become invalid (\eg memory mappings,
-descriptors, locks) leading to potentially inconsistent state.
-
-To address these challenges, instead of providing the
-\lstinline`fork`-like facility, we have decided to provide set of basic
-primitives which can be used to construct the new process in truly
-micro-kernel fashion, and rely on untrusted libraries to implement the
-\lstinline`fork`-like semantics (\eg or different semantics if needed) on
-top of these.
-
-\ldots
-
-Since parent process is responsible for setting up the reverse service
-connection, it can subsume the role of reverse service itself and either
-proxy some of the root reverse service operations or completely replace
-it.
-
-\ldots
-
-Since reverse service is being used for accessing file system \ldots we
-can effectively create a sub-sandbox for the child process. one example
-computational kernel (seccomp).
-
-\subsection{Memory Sharing}
-\label{sub:memory_sharing}
-
-\begin{structure}
-\item Memory Service used for fork emulation;
-\item Page protection and user-level exceptions used to detect
-  writes to shared pages to emulate copy-on-write;
-\item Assumes same protection domain, so badly behaving application
-  can only harm themselves.
-\end{structure}
-
-User-level fork emulation library manages address space.  All memory
-are backed by shared memory, though initially not necessarily actually
-shared.  On fork, new subprocess is created which have special IRT
-that speaks the fork-emulation protocol.  The subprocess receives
-shared memory descriptors and location where they are mapped in the
-parent process.  Both parent and child processes change page
-protection of all pages to read-only to emulate copy-on-write.  On
-fault, affected page is copied to new shared memory, reference count
-to the old page within the original shared memory object is
-decremented, the new shared memory pages mapped in place with writable
-mapping, and the affect thread is continued.  We don't want to have a
-separate shared memory file for every 64KB page (probably too many
-descriptors, filesystem related overhead), so there will be some
-interesting optimizations here: if we shared memory object is multiple
-pages in size, but a ``hole'' in the middle has zero references, how
-do we reclaim the disk / paging space?
-
-Concerns: shared memory is a scarce resource.  /dev/shm is typically a
-small fraction of RAM size.  Threads vs fork -- may need to stop all
-other threads while pages are being manipulated?  On Unices where mmap
-on top of existing mapping is atomic, it may not be necessary; on
-Windows where unmap must occur first and therefore overmapping is not
-atomic, this is likely to be necessary.

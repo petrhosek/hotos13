@@ -1,4 +1,130 @@
 \section{Prototype}
 \label{sec:prototype}
 
+The goal is to provide full POSIX interface. While Native Client already
+provides a subset of POSIX API including thread interface and common
+file I/O interfaces, it still misses important parts such as process
+support, user management or non-blocking I/O. We believe that it is
+possible to implement the missing functionality using microkernel design
+to provide fast yet portable and safe alternative to the existing VM
+implementations.
 
+Furthermore, our approach gives greater level control which is so
+important in cloud deployments.
+
+The existing \emph{Platform as a Service} (PaaS) such as Google
+App Engine already uses multi-tenancy where several applications share
+the same physical or virtual machine. However, to ensure security and
+isolation, the number of supported platforms is limited to Java, Python
+and Go which provide custom sandboxed runtimes.
+
+The solution based on Native Client would allow executing native
+POSIX-compliant code at near native speed while providing the same
+security and isolation guarantees. This will allow the use of wide
+range of existing legacy software without the overhead of running (and
+managing) the entire VM.
+
+\subsection{Process Support}
+\label{sub:process_support}
+
+While existing NaCl implementation already provides thread support,
+exposed through a subset of the POSIX threads interface, it misses
+process management support. The process support is necessary in cases
+when resource sharing, in particular of virtual memory, is not desired.
+
+The process support is important for certain set of applications such
+as interactive shells. These shells typically rely on \lstinline`fork` to
+spawn new application processes. 
+
+\todo{This introduction is not particularly amazing.}
+
+The NaCl Application Binary Interface (ABI) exposed to untrusted code is
+modeled after POSIX ABI. This makes it easy to port existing POSIX
+application over to Native Client with minimal or no changes at all.
+% Service runtime provides a subset of the POSIX threads interface as
+% well as common POSIX ﬁle I/O interface.
+
+Therefore, following the same philosophy, our main goal when designing
+the process support for NaCl was to provide an equivalent of the POSIX
+\lstinline`fork` system call. However, there are two challenges.
+
+First, the process support has to be portable. Native Client executable
+can be run on any supported platform without recompilation (as long as
+the architecture remains the same). This means that process support can
+only rely on a common denominator of the functionality provided by the
+supported underlying operating systems (\ie Windows, Linux and OS X).
+
+Different operating systems provide different process creation
+primitives. For example, while operating systems from the UNIX family
+typically use the \lstinline`fork` semantics, Windows family operating
+systems provide \lstinline`spawn` facilities. Even though POSIX
+specification provides both \lstinline`fork` and \lstinline`posix_spawn`,
+only OS X as fully POSIX conformant provides both primitives.
+
+Second, the process support needs to have a clear semantics. This is an
+issue with \lstinline`fork` operation which is supposed to create the
+exact copy the existing process. However, when using a \lstinline`fork`
+with multi-threaded program, we might end up in an inconsistent state
+since only the thread invoking \lstinline`fork` is cloned.
+
+This problem is even worse in case of NaCl service runtime which shares
+the process with untrusted code and uses automatic resource management
+to increase reliability of resource (de)allocation. However, if we use
+the \lstinline`fork` system call to create a copy of the existing process,
+the bookkeeping information will become invalid (\eg memory mappings,
+descriptors, locks) leading to potentially inconsistent state.
+
+To address these challenges, instead of providing the
+\lstinline`fork`-like facility, we have decided to provide set of basic
+primitives which can be used to construct the new process in truly
+micro-kernel fashion, and rely on untrusted libraries to implement the
+\lstinline`fork`-like semantics (\eg or different semantics if needed) on
+top of these.
+
+\ldots
+
+Since parent process is responsible for setting up the reverse service
+connection, it can subsume the role of reverse service itself and either
+proxy some of the root reverse service operations or completely replace
+it.
+
+\ldots
+
+Since reverse service is being used for accessing file system \ldots we
+can effectively create a sub-sandbox for the child process. one example
+computational kernel (seccomp).
+
+\subsection{Memory Sharing}
+\label{sub:memory_sharing}
+
+\begin{structure}
+\item Memory Service used for fork emulation;
+\item Page protection and user-level exceptions used to detect
+  writes to shared pages to emulate copy-on-write;
+\item Assumes same protection domain, so badly behaving application
+  can only harm themselves.
+\end{structure}
+
+User-level fork emulation library manages address space.  All memory
+are backed by shared memory, though initially not necessarily actually
+shared.  On fork, new subprocess is created which have special IRT
+that speaks the fork-emulation protocol.  The subprocess receives
+shared memory descriptors and location where they are mapped in the
+parent process.  Both parent and child processes change page
+protection of all pages to read-only to emulate copy-on-write.  On
+fault, affected page is copied to new shared memory, reference count
+to the old page within the original shared memory object is
+decremented, the new shared memory pages mapped in place with writable
+mapping, and the affect thread is continued.  We don't want to have a
+separate shared memory file for every 64KB page (probably too many
+descriptors, filesystem related overhead), so there will be some
+interesting optimizations here: if we shared memory object is multiple
+pages in size, but a ``hole'' in the middle has zero references, how
+do we reclaim the disk / paging space?
+
+Concerns: shared memory is a scarce resource.  /dev/shm is typically a
+small fraction of RAM size.  Threads vs fork -- may need to stop all
+other threads while pages are being manipulated?  On Unices where mmap
+on top of existing mapping is atomic, it may not be necessary; on
+Windows where unmap must occur first and therefore overmapping is not
+atomic, this is likely to be necessary.

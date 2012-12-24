@@ -8,26 +8,83 @@
   \item Missing process abstraction and the solution
 \end{structure}
 
-In recent years, we have witnessed a boom of virtualization. Most of the
-servier infrastructure which is now being used is running virtualized.
-However, virtualization still failed to attract desktop market despite
-obvious advantages such as portability, security, reliability and
-isolation. We believe this is because the existing virtualization
-solutions are too heavyweight and cumbersome. They allow to run entire
-operating system which is suitable for infrastructure provisioning in
-data center and cloud applications, but is simply too cumbersome for
-desktop and client applications.
+%Virtualization has become de facto standard for provisioning
+%infrastructure in datacenters~\cite{barosso:datacenter}.
 
-In this paper, we propose a more lightweight alternative. Instead of
-running full operating system kernel, our goal is to combine aspects of
-microkernel and monolithic kernel design with software fault isolation
-techniques to provide lightweight solution for virtualization of
-existing applications in the user space.  Furthemore, our proposed
-approach allows applications to be run on top of three major operating
-system without recompilation.
+With the rising popularity of cloud computing, the prevalence of
+virtualization is steadily growing. While \emph{Infrastructure as a
+Service} (IaaS) model assumes provisioning an entire operating system
+using system virtual machines (\eg Xen or KVM), \emph{Platform as a
+Service} (PaaS) models typically relies an execution environment in the
+form of application virtual machine (\eg JVM or Python). The advantage
+of the former is finer degree of control over the entire execution stack
+while the advantage of the latter is a better resource utilization as we
+can run large number of application--potentially from different
+customers---on a single machine. The existing PaaS platforms such as
+Google App Engine already uses multi-tenancy where several applications
+share the same physical or virtual machine.  However, to ensure security
+and isolation, the number of supported platforms is limited to Java,
+Python and Go using custom sandboxed runtimes.
+
+In this position paper, we propose an alternative which combines
+advantages of both approaches. We argue for an application virtual
+machine capable of executing native code providing the standard POSIX
+interface. We aim to combine \emph{software fault isolation} (SFI) for
+security and isolation properties with microkernel service oriented
+architecture to provide process management, file and network access.
+Based on top of Native Client~\cite{yee:ieee-sp09}, state of the art
+industrial strength SFI implementation, this solution can provide
+security and performance assurances comparable to existing system
+virtual machines at fractional \emph{trusted code base} (TCB) size which
+allows for easier verification and maintenance. 
+
+Such execution environment could form a basis for a new kind of
+POSIX-compatible PaaS native platform, which will allow for execution of
+high-performance applications. Such platform will be more efficient than
+traditional virtualization and some language based sandboxes while more
+flexible than Linux-based systems, akin to virtual machines.
+Furthermore, native code support will enable use of existing C/C++
+libraries and legacy code.  Example of such service is Google
+Exacycle~\cite{exacycle:google}, which provides PaaS platform for
+large-scale, embarrasingly parallel batch computations.
+
+%The solution based on Native Client would allow executing native
+%POSIX-compliant code at near native speed while providing the same
+%security and isolation guarantees. This will allow the use of wide
+%range of existing legacy software without the overhead of running (and
+%managing) the entire VM.
+
+%i like NaCl as a posix-like platform-as-a-service a little better,
+%though restricting to the posix-y subset sort of works wrt running on a
+%real posix-y OS too, i guess.
+
+%more efficient than virtualization and some language based sandboxes.
+%more flexible than LBS, akin to VMs
+%not just novelty, but TCB minimization
 
 The rest of this paper is organized as follows.
 Section~\ref{sec:overview} gives an overview of our approach, \ldots.
 Then, Section~\ref{sec:prototype} presents \ldots. Finally,
 Section~\ref{sec:related} discusses related work and
 Section~\ref{sec:conclusion} concludes.
+
+%Furthermore, our approach gives greater level control which is so
+%important in cloud deployments.
+
+%In recent years, we have witnessed a boom of virtualization. Most of the
+%server infrastructure which is now being used runs virtualized.
+%However, virtualization still failed to attract desktop market despite
+%obvious advantages such as portability, security, reliability and
+%isolation. We believe this is because the existing virtualization
+%solutions are too heavyweight and cumbersome. They require the user run
+%an entire operating system which is suitable for infrastructure
+%provisioning in data centers as well as certain cloud applications, but
+%is simply too cumbersome for desktop and client applications.
+
+%In this paper, we propose a more lightweight alternative. Instead of
+%running the full operating system, our goal is to combine aspects of
+%microkernel and monolithic kernel design with software fault isolation
+%techniques to provide lightweight solution for virtualization of
+%existing applications in the user space. Furthemore, our proposed
+%approach allows applications to be run on top of three major operating
+%system without recompilation.
