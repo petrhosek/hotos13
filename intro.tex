@@ -1,42 +1,50 @@
 \section{Introduction}
 \label{sec:intro}
 
-\begin{structure}
-  \item Full virtualization and para-virtualization are too heavyweight
-  \item SFI sandbox as lightweight replacement providing isolation,
-    security and portability
-  \item Missing process abstraction and the solution
-\end{structure}
+%With the rising popularity of cloud computing, the popularity of
+%virtualization is steadily growing as a way to implement
+%\emph{multi-tenancy}.
 
-%Virtualization has become de facto standard for provisioning
-%infrastructure in datacenters~\cite{barosso:datacenter}.
+In recent years, with the rising popularity of cloud computing,
+virtualization became crucially important as a way to provide
+\emph{multi-tenancy}. While \emph{Infrastructure as a Service} (IaaS)
+model assumes provisioning an entire operating system using virtual
+machine monitors (\eg Google Compute Engine), \emph{Platform as a
+Service} (PaaS) model typically relies on a language runtimes (\eg
+Google App Engine). The~advantage of the former is a finer degree of
+control over the entire application stack while the latter allows for
+better resource utilization. A~modern hypervisor uses hardware
+virtualization technology to enforce isolation and resource allocation;
+in case of language runtime, ad-hoc sandboxing mechanism is typically
+being used to provide the same guarantees, which results in a limited
+number of supported platforms (\eg Java, Python and Go in case of Google
+App Engine).
 
-With the rising popularity of cloud computing, the prevalence of
-virtualization is steadily growing. While \emph{Infrastructure as a
-Service} (IaaS) model assumes provisioning an entire operating system
-using system virtual machines (\eg Xen or KVM), \emph{Platform as a
-Service} (PaaS) models typically relies an execution environment in the
-form of application virtual machine (\eg JVM or Python). The advantage
-of the former is finer degree of control over the entire execution stack
-while the advantage of the latter is a better resource utilization as we
-can run large number of application--potentially from different
-customers---on a single machine. The existing PaaS platforms such as
-Google App Engine already uses multi-tenancy where several applications
-share the same physical or virtual machine.  However, to ensure security
-and isolation, the number of supported platforms is limited to Java,
-Python and Go using custom sandboxed runtimes.
+%As cloud providers can use multi-tenancy run large number of
+%applications---potentially coming from different customers---under a
+%single operating system instance. The existing PaaS platforms such as
+%Google App Engine already uses multi-tenancy where several applications
+%share the same physical or virtual machine.  However, to ensure the
+%security and isolation, the number of supported platforms is limited to
+%Java, Python and Go using custom sandboxed runtimes.
+
+%The existing PaaS platforms such as Google App Engine already uses
+%multi-tenancy where several applications share the same physical or
+%virtual machine.  However, to ensure the security and isolation, the
+%number of supported platforms is limited to Java, Python and Go using
+%custom sandboxed runtimes.
 
 In this position paper, we propose an alternative which combines
 advantages of both approaches. We argue for an application virtual
 machine capable of executing native code providing the standard POSIX
 interface. We aim to combine \emph{software fault isolation} (SFI) for
-security and isolation properties with microkernel service oriented
+security and isolation properties with microkernel-style service oriented
 architecture to provide process management, file and network access.
 Based on top of Native Client~\cite{yee:ieee-sp09}, state of the art
 industrial strength SFI implementation, this solution can provide
 security and performance assurances comparable to existing system
-virtual machines at fractional \emph{trusted code base} (TCB) size which
-allows for easier verification and maintenance. 
+virtual machines at a fractional \emph{trusted code base} (TCB) size
+which allows for easier verification and maintenance. 
 
 Such execution environment could form a basis for a new kind of
 POSIX-compatible PaaS native platform, which will allow for execution of
@@ -44,9 +52,23 @@ high-performance applications. Such platform will be more efficient than
 traditional virtualization and some language based sandboxes while more
 flexible than Linux-based systems, akin to virtual machines.
 Furthermore, native code support will enable use of existing C/C++
-libraries and legacy code.  Example of such service is Google
-Exacycle~\cite{exacycle:google}, which provides PaaS platform for
+libraries and legacy code as well as extended instruction sets (\eg SSE
+or AVX) for high-performance applications. Example of such service is
+Google Exacycle~\cite{exacycle:google}, which provides PaaS platform for
 large-scale, embarrasingly parallel batch computations.
+
+Furthermore, native code support together with full POSIX interface
+allows running existing runtimes on top of our execution environment
+without the necessity of ad-hoc sandboxing mechanism since the
+environment itself already provides sandboxing capabilities. This has a
+number of advantages.  First, it is possible to use ``vanilla'' language
+runtimes which allows for upgrading to a newer version immediately after
+they are released significantly reducing the risk of zero-day
+vulnerabilities. Second, it allows provisioning of wider range of
+runtimes potentially attracting more customers, even those using less
+popular languages and platforms.  Third, it will allow use of native
+extensions supported by most language runtimes, but not always available in
+PaaS environments for security reasons.
 
 %The solution based on Native Client would allow executing native
 %POSIX-compliant code at near native speed while providing the same

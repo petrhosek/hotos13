@@ -106,6 +106,12 @@ minimal or no changes at all.
 %management and shared memory. \todo{Not sure whether shared memory
 %really that important?}
 
+\todo{Each service runtime instance has two channels---secure command
+channel used by reverse service to control the execution, in particular
+to load the NaCl executable and intergrated runtime, start and stop the
+module execution; and reverse channel used by service runtime to access
+kernel functionality.}
+
 \subsection{Reverse Service}
 
 % While service runtime is the in-process sandbox enforcing fault
