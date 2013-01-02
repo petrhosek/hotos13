@@ -100,7 +100,11 @@ significant performance overhead, allowing applications to be run on top
 of three major operating systems without modifications or even
 recompilation. \todo{Shall we say any operating system---even though
 Native Client only supports Windows, Linux and OS X at the moment, it
-should be possible to add support for other operating systems if needed.}
+should be possible to add support for other operating systems if
+needed.  I'd rather not: there are OSes to which porting NaCl would be
+difficult, e.g., missing some basic IPC mechanism.  Also, the
+portability currently has an ISA-dependency in NaCl (vs lack of assembly in
+PNaCl)---this is probably too much detail for the abstract.}
 \end{abstract}
 
 \input{intro}

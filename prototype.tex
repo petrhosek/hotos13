@@ -70,7 +70,8 @@ the process with untrusted code and uses automatic resource management
 to increase reliability of resource (de)allocation. However, if we use
 the \lstinline`fork` system call to create a copy of the existing process,
 the bookkeeping information will become invalid (\eg memory mappings,
-descriptors, locks) leading to potentially inconsistent state.
+descriptors, locks) leading to potentially inconsistent state if
+\lstinline`pthread_atfork` is not used everywhere that it is needed.
 
 To address these challenges, instead of providing the
 \lstinline`fork`-like facility, we have decided to provide set of basic
