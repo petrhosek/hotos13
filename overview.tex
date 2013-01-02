@@ -43,6 +43,9 @@ untrusted, multi-threaded user-level machine code. While primarily aimed
 towards executing native compiled code inside the web browser, the NaCl
 core components can be also used as a general-purpose sandbox.
 
+\todo{Do mention that NaCl has been security audited, this was possible
+because of the small TCB size.}
+
 Native Client combines two sandboxing mechanisms. The inner sandbox
 supports restricted subset of x86, x86-64 and ARM ISA defined by a set
 of constraints, a modified compilation tool chain that observes these
@@ -77,6 +80,11 @@ simple and basic remote method invocation mechanism supporting only
 basic data types (\ie \lstinline`int`, \lstinline`float`,
 \lstinline`char` in addition to arrays and internal descriptors).
 
+\todo{Talk about portability; the same NaCl application can run on
+Linux, OS X and Windows as long as the hardware architecture is the
+same, with PNaCl even this restriction is lifted (compare to JVM and
+other language runtimes).}
+
 %SRPC is implemented entirely in untrusted code on top the
 %IMC (Inter-Module Communications), Native Client's reliable datagram
 %service. External data representation strategies can easily be layered
@@ -98,7 +106,7 @@ The Application Binary Interface (ABI) exposed to the untrusted code is
 modeled after POSIX ABI and includes subset of the POSIX thread
 interface as well as common POSIX file I/O interfaces.  However,
 application programmers do not typically use the ABI directly, instead
-they use one of the provided C libraries (Newlib or Glibc) which hide
+they use one of the provided C libraries (\ie Newlib or Glibc) which hide
 away internal details and provide common interface.
 
 %The NaCl architecture resembles existing micro and hybrid kernels.
