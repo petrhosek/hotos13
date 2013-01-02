@@ -36,12 +36,20 @@ user space, it doesn't require any special privileges which makes
 component/module replacement significantly easier. The reduced TCB also
 size allows for easier security audits.
 
+\begin{figure}
+\centering
+%\includegraphics{architecture}
+\caption{Overview of core NaCl components}
+\label{fig:architecture}
+\end{figure}
+
 Our proposed solution will be based on top of Native Client (commonly
 abbreviated ``NaCl'' when used as an adjective), an open-source
 production-quality SFI-based sandbox for the safe execution of
 untrusted, multi-threaded user-level machine code. While primarily aimed
 towards executing native compiled code inside the web browser, the NaCl
-core components can be also used as a general-purpose sandbox.
+core components, depicted in Figure~\ref{fig:architecture}, can be also
+used as a general-purpose sandbox.
 
 \todo{Do mention that NaCl has been security audited, this was possible
 because of the small TCB size.}
@@ -57,13 +65,6 @@ security, Native Client optionally uses additional outer sandbox
 implemented as a traditional OS system-call interception (\eg using
 seccomp~\cite{seccomp:linux} or
 seccomp\mbox{-}bpf~\cite{seccomp-bpf:linux}).
-
-\begin{figure}
-\centering
-%\includegraphics{architecture}
-\caption{Overview of core NaCl components}
-\label{fig:architecture}
-\end{figure}
 
 The sandbox is implemented as a part of \emph{service runtime}, a native
 executable which provides resource abstractions to isolate NaCl
@@ -144,8 +145,6 @@ away internal details and provide common interface.
 %  monolithic kernel, so the various microkernel-related overheads
 %  (context switch, etc) still exist.  The benefits are structural:
 %  easier replacement of components/modules, easier security audits.}
-
-
 
 %Native Client follows micro-kernel design by implementing many aspects
 %of the sandbox in terms of services. All services are implemented using
