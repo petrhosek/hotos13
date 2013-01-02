@@ -1,6 +1,13 @@
 \section{Prototype}
 \label{sec:prototype}
 
+\begin{structure}
+\item Process support issues (\eg no fork on Windows)
+\item Proposed approach with process service
+\item Memory sharing between processes
+\item Memory service design
+\end{structure}
+
 The goal is to provide full POSIX interface. While Native Client already
 provides a subset of POSIX API including thread interface and common
 file I/O interfaces, it still misses important parts such as process
@@ -8,15 +15,6 @@ support, user management or non-blocking I/O. We believe that it is
 possible to implement the missing functionality using microkernel design
 to provide fast yet portable and safe alternative to the existing VM
 implementations.
-
-Furthermore, our approach gives greater level control which is so
-important in cloud deployments.
-
-The existing \emph{Platform as a Service} (PaaS) such as Google
-App Engine already uses multi-tenancy where several applications share
-the same physical or virtual machine. However, to ensure security and
-isolation, the number of supported platforms is limited to Java, Python
-and Go which provide custom sandboxed runtimes.
 
 The solution based on Native Client would allow executing native
 POSIX-compliant code at near native speed while providing the same

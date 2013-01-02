@@ -17,7 +17,7 @@ administration implications (see Section~\ref{sec:overview}). Dune uses
 standard \lstinline`fork` semantics where newly spawned processes are
 \emph{not} implicitly sandboxed.
 
-User Mode Linux (UML)~\cite{uml:linux} enables Linux kernel to be run as
+User Mode Linux (UML)~\cite{uml:linux06} enables Linux kernel to be run as
 an user-space application to create multiple virtual systems. While the
 overall approach is similar to Native Client with each guest process being
 mapped to a single host process and guest kernel being responsible for
@@ -33,7 +33,7 @@ security mechanisms and relies entirely on user-space isolation. The
 advantage of UML over Native Client is full compatibility with existing
 applications.
 
-\cite{tanenbaum:osdi01}
+\cite{tanenbaum:osdi08}
 \cite{engler:sosp95}
 \cite{yee:ieee-sp09}
 \cite{sehr:usenix-sec10}

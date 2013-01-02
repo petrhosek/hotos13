@@ -37,25 +37,28 @@ App Engine).
 In this position paper, we propose an alternative which combines
 advantages of both approaches. We argue for an application virtual
 machine capable of executing native code providing the standard POSIX
-interface. We aim to combine \emph{software fault isolation} (SFI) for
-security and isolation properties with microkernel-style service oriented
-architecture to provide process management, file and network access.
-Based on top of Native Client~\cite{yee:ieee-sp09}, state of the art
-industrial strength SFI implementation, this solution can provide
-security and performance assurances comparable to existing system
-virtual machines at a fractional \emph{trusted code base} (TCB) size
-which allows for easier verification and maintenance. 
+interface. We aim to combine \emph{software fault isolation}
+(SFI)~\cite{wahbe:sosp93} for security and isolation properties with
+microkernel-style service oriented architecture to provide process
+management, file and network access. Based on top of Native
+Client~\cite{yee:ieee-sp09}, state of the art industrial strength SFI
+implementation, this solution can provide security and performance
+assurances comparable to existing system virtual machines at a
+fractional \emph{trusted code base} (TCB) size which allows for easier
+verification and maintenance. 
 
 Such execution environment could form a basis for a new kind of
-POSIX-compatible PaaS native platform, which will allow for execution of
+POSIX compliant PaaS native platform, which will allow for execution of
 high-performance applications. Such platform will be more efficient than
 traditional virtualization and some language based sandboxes while more
 flexible than Linux-based systems, akin to virtual machines.
 Furthermore, native code support will enable use of existing C/C++
 libraries and legacy code as well as extended instruction sets (\eg SSE
 or AVX) for high-performance applications. Example of such service is
-Google Exacycle~\cite{exacycle:google}, which provides PaaS platform for
-large-scale, embarrasingly parallel batch computations.
+Google Exacycle\footnote{\url{http://googleresearch.
+blogspot.com/2011/04/1-billion- core-hours-of-computational.html}},
+which provides PaaS platform for large-scale, embarrasingly parallel
+batch computations.
 
 Furthermore, native code support together with full POSIX interface
 allows running existing runtimes on top of our execution environment

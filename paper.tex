@@ -84,17 +84,17 @@ we have witnessed a boom of virtualization. Most of the software
 infrastructure which is being used nowadays runs virtualized in some
 form. However, existing virtualization solutions are still too limited
 despite obvious advantages such as portability, security and isolation.
-System virtual machines require the user to run an entire operating
+Virtual machine monitors require the user to run an entire operating
 system which is suitable for infrastructure provisioning in data centers
 as well as certain cloud applications, but is simply too cumbersome for
-desktop and client applications.  Application virtual machines on the
-other hand are typically targeting only a single language (or language
-family) making them unsuitable for native applications.
+desktop and client applications.  Language runtimes on the other hand
+are typically targeting only a single high-level language (or family) making
+them unsuitable for native applications.
  
 In this paper, we propose an alternative approach. We aim to combine
 aspects of microkernel and hybrid kernel design with software fault
 isolation techniques to provide lightweight solution for virtualization
-of existing POSIX-based applications entirely in the user space.
+of existing POSIX based applications entirely in the user space.
 Furthermore, our proposed approach provides portability without
 significant performance overhead, allowing applications to be run on top
 of three major operating systems without modifications or even
