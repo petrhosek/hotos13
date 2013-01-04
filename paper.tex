@@ -69,7 +69,7 @@
 
 \begin{document}
 
-\title{\bf Microkernel in the User Space}
+\title{\bf Microkernel in User Space}
 \author{
 Petr Hosek\footnote{Work done while an intern at \textit{Google Inc}.}\\\textit{Imperial College London}
 \and Bennet Yee\\\textit{Google Inc.}
@@ -85,7 +85,7 @@ infrastructure which is being used nowadays runs virtualized in some
 form. However, existing virtualization solutions are still too limited
 despite obvious advantages such as portability, security and isolation.
 Virtual machine monitors require the user to run an entire operating
-system which is suitable for infrastructure provisioning in data centers
+system, which is suitable for infrastructure provisioning in data centers
 as well as certain cloud applications, but is simply too cumbersome for
 desktop and client applications.  Language runtimes on the other hand
 are typically targeting only a single high-level language (or family) making
@@ -93,18 +93,18 @@ them unsuitable for native applications.
  
 In this paper, we propose an alternative approach. We aim to combine
 aspects of microkernel and hybrid kernel design with software fault
-isolation techniques to provide lightweight solution for virtualization
-of existing POSIX based applications entirely in the user space.
-Furthermore, our proposed approach provides portability without
-significant performance overhead, allowing applications to be run on top
+isolation techniques to provide a lightweight solution for
+virtualizating existing POSIX-based applications entirely in user space.
+Our proposed approach is portabile, allows applications to be run on top
 of three major operating systems without modifications or even
-recompilation. \todo{Shall we say any operating system---even though
-Native Client only supports Windows, Linux and OS X at the moment, it
-should be possible to add support for other operating systems if
-needed.  I'd rather not: there are OSes to which porting NaCl would be
-difficult, e.g., missing some basic IPC mechanism.  Also, the
-portability currently has an ISA-dependency in NaCl (vs lack of assembly in
-PNaCl)---this is probably too much detail for the abstract.}
+recompilation, and does not incur significant performance overhead.
+\todo{Shall we say any operating system---even though Native Client only
+supports Windows, Linux and OS X at the moment, it should be possible to
+add support for other operating systems if needed.  I'd rather not:
+there are OSes to which porting NaCl would be difficult, e.g., missing
+some basic IPC mechanism.  Also, the portability currently has an
+ISA-dependency in NaCl (vs lack of assembly in PNaCl)---this is probably
+too much detail for the abstract.}
 \end{abstract}
 
 \input{intro}

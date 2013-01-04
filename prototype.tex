@@ -8,93 +8,141 @@
 \item Memory service design
 \end{structure}
 
-The goal is to provide full POSIX interface. While Native Client already
-provides a subset of POSIX API including thread interface and common
-file I/O interfaces, it still misses important parts such as process
-support, user management or non-blocking I/O. We believe that it is
-possible to implement the missing functionality using microkernel design
-to provide fast yet portable and safe alternative to the existing VM
+The goal is to provide full POSIX interface. Although Native Client
+already provides a subset of this interface, which allows porting some
+of the existing POSIX based code, it is still missing certain interfaces
+which makes it difficult to run existing applications simply by
+recompiling them using NaCl tool chain.  We believe that it is possible
+to implement the missing functionality using microkernel design to
+provide a fast yet portable and safe alternative to the existing VM
 implementations.
 
-The solution based on Native Client would allow executing native
-POSIX-compliant code at near native speed while providing the same
-security and isolation guarantees. This will allow the use of wide
-range of existing legacy software without the overhead of running (and
-managing) the entire VM.
+\todo{Introduce embedding interface as a realization of microkernel
+design and a way to provide extensibility and flexibility.}
+%The features we want to provide are flexibility and maintainability.
+%\ldots embedding interface \ldots allows to use \ldots in various setups
+%\ie executing native code within a web page, lightweight virtualization
+%in cloud provisioning
+
+%Different implementations of embedding interface, one for browser, one
+%for server, one for mobile phone, etc.
+
+\begin{figure}
+\centering
+%\includegraphics{architecture}
+\caption{Embedding interface architecture}
+\label{fig:architecture}
+\end{figure}
+
+While service runtime is the in-process sandbox enforcing fault
+isolation and providing facilities such as network communication, memory
+management, resource abstraction or the system call interface, it is the
+\emph{reverse service} which provides inter-process services such as
+file access, process support or IPC facilities.
+
+When started, each service runtime instance is identified by the
+secure socket address which is used to establish the \emph{secure
+command channel}. This channel is used to control the runtime execution,
+in particular to load the NaCl executable and IRT into memory, to
+establish the reverse channel, to start and stop the process execution.
+The \emph{reverse channel} can be used by the service runtime to access
+the embedding interface.
+
+The process holding the secure command channel can be seen as an
+effective process parent. While it is indeed possible to have multiple
+command channels, there has to be at least one channel at any given
+point.  When the last command channel is disconnected, the service
+runtime immediately terminates the execution.
+
+%Each service runtime instance has a connection to reverse service. The
+%\emph{initial} service runtime has a connection to the trusted reverse
+%service \ldots while child processes might be using a different instance
+%of the reverse service. This allows \ldots injecting a proxy which
+%intercepts some (or all) calls to the actual reverse service or provide
+%entirely different reverse service implementation running in untrusted
+%code.
+
+%The \emph{reverse service} represents the embedding interface, providing
+%core facilities such as process management, file system access or
+%application. IPC % thereby resembling the traditional micro-kernels.
+%The name comes from the fact that unlike other service which act as a
+%server, the reverse service starts as a client connecting to a service
+%runtime which acts a server and only then is the connection
+%\emph{reversed} and reverse service becomes the server. This setup is
+%necessary since service runtime is not allowed to establish outside
+%connection as one of the security measures.
 
 \subsection{Process Support}
 \label{sub:process_support}
 
-While existing NaCl implementation already provides thread support,
-exposed through a subset of the POSIX threads interface, it misses
-process management support. The process support is necessary in cases
-when resource sharing, in particular of virtual memory, is not desired.
+While existing NaCl implementation already supports threads, it misses
+process support, important for certain set of applications such as
+interactive shells.  \todo{This introduction is not particularly
+amazing.}
 
-The process support is important for certain set of applications such
-as interactive shells. These shells typically rely on \lstinline`fork` to
-spawn new application processes. 
+First and the most important requirement imposed on process support is
+portability. Native Client executable must run on any supported platform
+without recompilation (as long as the architecture remains the same).
+This means that process support can only rely on a common denominator of
+the functionality provided by the supported underlying operating systems
+(\ie Windows, Linux and OS X). The POSIX specification defines two
+interfaces for creating new processes, \lstinline`fork` and
+\lstinline`posix_spawn`. While the former creates a copy of an existing
+process, the latter creates a new process from the specified image.
+However, different operating systems implement different subset of these
+primitives. Linux only provides \lstinline`fork` (or \lstinline`clone`
+as a non-standard extension).  Windows \lstinline`CreateProcess` is
+equivalent to POSIX \lstinline`posix_spawn`. Only OS X as a fully POSIX
+conformant OS provides both primitives.
 
-\todo{This introduction is not particularly amazing.}
-
-The NaCl Application Binary Interface (ABI) exposed to untrusted code is
-modeled after POSIX ABI. This makes it easy to port existing POSIX
-application over to Native Client with minimal or no changes at all.
-% Service runtime provides a subset of the POSIX threads interface as
-% well as common POSIX ﬁle I/O interface.
-
-Therefore, following the same philosophy, our main goal when designing
-the process support for NaCl was to provide an equivalent of the POSIX
-\lstinline`fork` system call. However, there are two challenges.
-
-First, the process support has to be portable. Native Client executable
-can be run on any supported platform without recompilation (as long as
-the architecture remains the same). This means that process support can
-only rely on a common denominator of the functionality provided by the
-supported underlying operating systems (\ie Windows, Linux and OS X).
-
-Different operating systems provide different process creation
-primitives. For example, while operating systems from the UNIX family
-typically use the \lstinline`fork` semantics, Windows family operating
-systems provide \lstinline`spawn` facilities. Even though POSIX
-specification provides both \lstinline`fork` and \lstinline`posix_spawn`,
-only OS X as fully POSIX conformant provides both primitives.
-
-Second, the process support needs to have a clear semantics. This is an
-issue with \lstinline`fork` operation which is supposed to create the
-exact copy the existing process. However, when using a \lstinline`fork`
-with multi-threaded program, we might end up in an inconsistent state
-since only the thread invoking \lstinline`fork` is cloned.
-
-This problem is even worse in case of NaCl service runtime which shares
-the process with untrusted code and uses automatic resource management
-to increase reliability of resource (de)allocation. However, if we use
-the \lstinline`fork` system call to create a copy of the existing process,
-the bookkeeping information will become invalid (\eg memory mappings,
-descriptors, locks) leading to potentially inconsistent state if
+Second, the process support must have a clear semantics. This is an
+issue with \lstinline`fork` which is supposed to create the exact copy
+the existing process. However, when using a \lstinline`fork` with a
+multi-threaded program, we might end up in an inconsistent state since
+only the thread invoking \lstinline`fork` is cloned.  This problem is
+magnified in case of NaCl service runtime which shares the process with
+untrusted code and uses automatic resource management to increase the
+reliability of resource (de)allocation. If we use the \lstinline`fork`
+system call to create a copy of the existing process, the bookkeeping
+information will become invalid (\eg memory mappings, descriptors,
+locks) leading to potentially inconsistent state if
 \lstinline`pthread_atfork` is not used everywhere that it is needed.
 
-To address these challenges, instead of providing the
-\lstinline`fork`-like facility, we have decided to provide set of basic
-primitives which can be used to construct the new process in truly
-micro-kernel fashion, and rely on untrusted libraries to implement the
-\lstinline`fork`-like semantics (\eg or different semantics if needed) on
-top of these.
+%Therefore, following the same philosophy, our main goal when designing
+%the process support for NaCl was to provide an equivalent of the POSIX
+%\lstinline`fork` system call. However, there are two challenges.
 
-\ldots
+To address these challenges, instead of implementing \lstinline`fork`
+like system call, embedding interface will provide process service  with
+a set of methods which may be used to spawn a new instance of
+service runtime returning the secure socket address. Since these methods
+are accessible to applications, we can rely on untrusted libraries (\eg
+IRT) to implement whatever semantics is needed on top these primitives.
 
-Since parent process is responsible for setting up the reverse service
-connection, it can subsume the role of reverse service itself and either
-proxy some of the root reverse service operations or completely replace
-it.
+Once the new service runtime has been created, the invoking process can
+decide whether it will establish the secure command channel and become
+the parent, or whether it will pass the socket address to another
+process.  This allows creating arbitrary process hierarchy.  While the
+default IRT implementation will resembles the standard POSIX behavior,
+embedders may provide custom IRT implementation which will use a
+different strategy.
 
-\ldots
+The parent process is responsible for loading the executable image and
+IRT over the command channel and subsequently starting the execution.
+This allows implementing the \lstinline`posix_spawn` like function
+entirely in the untrusted code. To implement \lstinline`fork`, we need a
+way to share memory between processes provided by \emph{memory service},
+further discussed in the next section.
 
-Since reverse service is being used for accessing file system \ldots we
-can effectively create a sub-sandbox for the child process. one example
-computational kernel (seccomp).
+Since the parent process is responsible for setting up the reverse
+service connection, it can subsume the role of embedding interface itself
+and either proxy some of the services or completely replace them. This
+allows creating specialized sub-sandboxes, \eg for executing computation
+kernels with restricted priviliges emulating seccomp-like behavior
+entirely in the untrusted code.
 
-\subsection{Memory Sharing}
-\label{sub:memory_sharing}
+\subsection{Memory Service}
+\label{sub:memory_service}
 
 \begin{structure}
 \item Memory Service used for fork emulation;
@@ -104,26 +152,63 @@ computational kernel (seccomp).
   can only harm themselves.
 \end{structure}
 
-User-level fork emulation library manages address space.  All memory
-are backed by shared memory, though initially not necessarily actually
-shared.  On fork, new subprocess is created which have special IRT
-that speaks the fork-emulation protocol.  The subprocess receives
-shared memory descriptors and location where they are mapped in the
-parent process.  Both parent and child processes change page
-protection of all pages to read-only to emulate copy-on-write.  On
-fault, affected page is copied to new shared memory, reference count
-to the old page within the original shared memory object is
-decremented, the new shared memory pages mapped in place with writable
-mapping, and the affect thread is continued.  We don't want to have a
-separate shared memory file for every 64KB page (probably too many
-descriptors, filesystem related overhead), so there will be some
-interesting optimizations here: if we shared memory object is multiple
-pages in size, but a ``hole'' in the middle has zero references, how
-do we reclaim the disk / paging space?
+To allow implementing \lstinline`fork` emulation including copy-on-write
+semantics, embedding interface needs to provide the \emph{memory
+service}. When used, all process memory will be backed by a shared
+memory, thought initially not necessarily shared.
 
-Concerns: shared memory is a scarce resource.  /dev/shm is typically a
-small fraction of RAM size.  Threads vs fork -- may need to stop all
-other threads while pages are being manipulated?  On Unices where mmap
-on top of existing mapping is atomic, it may not be necessary; on
-Windows where unmap must occur first and therefore overmapping is not
-atomic, this is likely to be necessary.
+When a new subprocess is created, it receives shared memory descriptors
+together with the location in the parent process' address space. Both
+parent and child processes have to change page protection of all memory
+pages to read-only to emulate copy-on-write. On fault, affected page is
+copied to a new shared memory which belongs to the subprocess, the
+reference count to the old page within the original shared memory object
+is decremented, the new shared memory pages are mapped in place of the
+original pages with write permissions, and the affected thread is
+continued.
+
+The memory service will be responsible for managing the shared memory,
+in particular (de)allocating the shared memory and automatic reference
+management. This is necessary since shared memory is potentially a
+scarce resource. There is also a space for potentially interesting
+optimizations. First, we do not want a separate shared memory file for
+every page (\eg limit on number of file descriptors, filesystem-related
+overhead), but if the shared memory object is multiple pages in size and
+a ``hole'' in the middle has zero references, we need to find a way to
+reclaim the space. Second, we have to make sure that the memory
+management is safe with respect to threads. This is not an issue on
+systems where altering the existing mapping can be done atomically, in
+particular on Linux and OS X (\ie mmap on top of existing mapping).
+However, on Windows where memory has to be unmapped first and therefore
+over-mapping is not atomic, we have to stop all threads while memory
+pages are being manipulated.
+
+%User-level fork emulation library manages address space.  All memory
+%are backed by shared memory, though initially not necessarily actually
+%shared.  On fork, new subprocess is created which have special IRT
+%that speaks the fork-emulation protocol.  The subprocess receives
+%shared memory descriptors and location where they are mapped in the
+%parent process.  Both parent and child processes change page
+%protection of all pages to read-only to emulate copy-on-write.  On
+%fault, affected page is copied to new shared memory, reference count
+%to the old page within the original shared memory object is
+%decremented, the new shared memory pages mapped in place with writable
+%mapping, and the affect thread is continued.  We don't want to have a
+%separate shared memory file for every 64KB page (probably too many
+%descriptors, filesystem related overhead), so there will be some
+%interesting optimizations here: if we shared memory object is multiple
+%pages in size, but a ``hole'' in the middle has zero references, how
+%do we reclaim the disk / paging space?
+
+%Concerns: shared memory is a scarce resource.  /dev/shm is typically a
+%small fraction of RAM size.  Threads vs fork -- may need to stop all
+%other threads while pages are being manipulated?  On Unices where mmap
+%on top of existing mapping is atomic, it may not be necessary; on
+%Windows where unmap must occur first and therefore overmapping is not
+%atomic, this is likely to be necessary.
+
+\subsection{File Service}
+\label{sub:file_service}
+
+\subsection{Network Service}
+\label{sub:network_service}

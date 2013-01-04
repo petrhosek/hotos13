@@ -12,7 +12,7 @@
 %but file I/O is essentially native
 
 We aim to provide an application virtual machine (VM) capable of running
-existing POSIX based applications with minimal or no changes at all. The
+existing POSIX-based applications with minimal or no changes at all. The
 main goal of our approach is to provide the same security and isolation
 assurances as hardware-based hypervisors (\eg Xen or KVM), but
 implemented entirely in the user space on top of existing monolithic
@@ -22,13 +22,13 @@ kernel resembling language runtimes (\eg JVM).
 microkernel structure stuff---and how file service handles namespaces
 but file I/O is essentially native.}
 
-We argue that the optimal way of implementing such VM is to combine SFI
+We argue that the optimal way of implementing such a VM is to combine SFI
 with microkernel style design.
 \todo{Try to come up with a better argumentation.}
 Compared to on-the-metal microkernels, there are number of significant
 differences. First of all, we rely on existing monolithic kernel (\ie
-Linux, OS X or Windows) to do the ``heavy lifting'', in particular
-handling hardware eliminating the need for device drivers. Second,
+Linux, OS X or Windows) to do the ``heavy lifting'' (in particular
+handling hardware) eliminating the need for device drivers. Second,
 various microkernel-related overheads (\eg context switch) still exist
 which may introduce additional performance overhead. The benefits of our
 approach are structural; since the VM is implemented entirely in the
@@ -40,7 +40,7 @@ size allows for easier security audits.
 \centering
 %\includegraphics{architecture}
 \caption{Overview of core NaCl components}
-\label{fig:architecture}
+\label{fig:overview}
 \end{figure}
 
 Our proposed solution will be based on top of Native Client (commonly
@@ -66,7 +66,7 @@ implemented as a traditional OS system-call interception (\eg using
 seccomp~\cite{seccomp:linux} or
 seccomp\mbox{-}bpf~\cite{seccomp-bpf:linux}).
 
-The sandbox is implemented as a part of \emph{service runtime}, a native
+The sandbox is implemented as the part of \emph{service runtime}, a native
 executable which provides resource abstractions to isolate NaCl
 applications from host resources and underlying operating system
 interfaces. Even though it shares a process with the contained NaCl
@@ -74,12 +74,12 @@ module, the sandbox prevents untrusted code from inappropriate accesses.
 The service runtime functionality is only accessible through system
 calls which resemble standard kernel system calls by performing a
 ``context switch'' from untrusted to trusted code, even though they use
-a different hardware mechanism. The service runtime already follows
-microkernel design by implementing many aspects of the sandbox in terms
-of services. All services are implemented using Simple RPC (SRPC), a
-simple and basic remote method invocation mechanism supporting only
-basic data types (\ie \lstinline`int`, \lstinline`float`,
-\lstinline`char` in addition to arrays and internal descriptors).
+a different hardware mechanism. The service runtime implements some
+aspects of the sandbox in terms of services (\eg name service). All
+services are implemented using Simple RPC (SRPC), a simple and basic
+remote method invocation mechanism supporting only basic data types (\ie
+\lstinline`int`, \lstinline`float`, \lstinline`char` in addition to
+arrays and internal descriptors).
 
 \todo{Talk about portability; the same NaCl application can run on
 Linux, OS X and Windows as long as the hardware architecture is the
@@ -102,6 +102,8 @@ advantage of using services over system calls is extensibility and
 easier development, the disadvantage is primarily performance overhead
 as each service method invocation requires several system calls (\ie
 sequence of \lstinline`sendmsg`/\lstinline`recvmsg` invocations).
+
+\todo{IRT can be seen as a part of embedding interface.}
 
 The Application Binary Interface (ABI) exposed to the untrusted code is
 modeled after POSIX ABI and includes subset of the POSIX thread

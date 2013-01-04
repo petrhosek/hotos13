@@ -5,17 +5,27 @@
 %virtualization is steadily growing as a way to implement
 %\emph{multi-tenancy}.
 
+%In recent years, virtualization has become crucialy important for \ldots
+%multi-tenancy, cloud computing.
+
+In this paper, we propose an application virtual machine (VM) capable of
+running existing POSIX-based applications with minimal or no changes at
+all. The main goal of our approach is to provide the same security and
+isolation assurances as hardware-based hypervisors (\eg Xen or KVM), but
+implemented entirely in the user space on top of existing monolithic
+kernel resembling language runtimes (\eg JVM).
+ 
 In recent years, with the rising popularity of cloud computing,
-virtualization became crucially important as a way to provide
-\emph{multi-tenancy}. While \emph{Infrastructure as a Service} (IaaS)
+virtualization has become crucially important as a way to provide
+\emph{multi-tenancy}. While the \emph{Infrastructure as a Service} (IaaS)
 model assumes provisioning an entire operating system using virtual
-machine monitors (\eg Google Compute Engine), \emph{Platform as a
+machine monitors (\eg Google Compute Engine), the \emph{Platform as a
 Service} (PaaS) model typically relies on a language runtimes (\eg
 Google App Engine). The~advantage of the former is a finer degree of
 control over the entire application stack while the latter allows for
 better resource utilization. A~modern hypervisor uses hardware
 virtualization technology to enforce isolation and resource allocation;
-in case of language runtime, ad-hoc sandboxing mechanism is typically
+in case of language runtimes, ad-hoc sandboxing mechanisms are typically
 being used to provide the same guarantees, which results in a limited
 number of supported platforms (\eg Java, Python and Go in case of Google
 App Engine).
@@ -34,30 +44,30 @@ App Engine).
 %number of supported platforms is limited to Java, Python and Go using
 %custom sandboxed runtimes.
 
-In this position paper, we propose an alternative which combines
-advantages of both approaches. We argue for an application virtual
-machine capable of executing native code providing the standard POSIX
-interface. We aim to combine \emph{software fault isolation}
+In this position paper, we propose a virtualization technology which
+combines the advantages of both approaches. We argue for an application
+virtual machine capable of executing native code providing the standard
+POSIX interface. We aim to combine \emph{software fault isolation}
 (SFI)~\cite{wahbe:sosp93} for security and isolation properties with
 microkernel-style service oriented architecture to provide process
 management, file and network access. Based on top of Native
-Client~\cite{yee:ieee-sp09}, state of the art industrial strength SFI
+Client~\cite{yee:ieee-sp09}, a state of the art industrial strength SFI
 implementation, this solution can provide security and performance
 assurances comparable to existing system virtual machines at a
 fractional \emph{trusted code base} (TCB) size which allows for easier
 verification and maintenance. 
 
-Such execution environment could form a basis for a new kind of
+Such an execution environment could form the basis for a new kind of
 POSIX compliant PaaS native platform, which will allow for execution of
-high-performance applications. Such platform will be more efficient than
-traditional virtualization and some language based sandboxes while more
-flexible than Linux-based systems, akin to virtual machines.
-Furthermore, native code support will enable use of existing C/C++
+high-performance applications. Such a platform will be more efficient
+than traditional virtualization and some language based sandboxes while
+more flexible than Linux-based systems, akin to virtual machines.
+Furthermore, native code support will enable the use of existing C/C++
 libraries and legacy code as well as extended instruction sets (\eg SSE
-or AVX) for high-performance applications. Example of such service is
-Google
-Exacycle\footnote{See \url{http://googleresearch.blogspot.com/2011/04/1-billion-core-hours-of-computational.html} and
-\url{http://research.google.com/university/exacycle_program.html}.},
+or AVX) for high-performance applications. Example of such a service is
+Google Exacycle\footnote{See
+\url{http://research.google.com/university/exacycle_program.html} and
+\url{http://googleresearch.blogspot.com/2011/04/1-billion-core-hours-of-computational.html}.},
 which provides PaaS platform for large-scale, embarrasingly parallel
 batch computations.
 
