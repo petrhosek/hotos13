@@ -183,6 +183,11 @@ However, on Windows where memory has to be unmapped first and therefore
 over-mapping is not atomic, we have to stop all threads while memory
 pages are being manipulated.
 
+Memory service is again largely implemented in the untrusted code
+resembling the microkernel architecture.
+
+IRT is a part of the embedding interface
+
 %User-level fork emulation library manages address space.  All memory
 %are backed by shared memory, though initially not necessarily actually
 %shared.  On fork, new subprocess is created which have special IRT

@@ -124,3 +124,40 @@ Section~\ref{sec:conclusion} concludes.
 %existing applications in the user space. Furthemore, our proposed
 %approach allows applications to be run on top of three major operating
 %system without recompilation.
+
+The original goal of POSIX was to provide compatibility across different
+UNIX implementation. Unfortunately it failed because number of reasons
+including non-standard extensions, different binary formats, \ldots
+
+Furthermore, the POSIX subsystem for Windows has recently been
+discontinued and Cygwin does not have binary compatibility. 
+
+The lightweight virtual machine will provide an excellent alternative to
+JVM \ie compile once run everywhere, which is now being used as a
+runtime environment for number of programming languages.  While one of
+the goals of JVM was to provide secure environment, a number of recent
+security vulnerabilities shows otherwise. Furthermore, since JVM was
+designed originally for Java language, it imposes number of restrictions
+on the languages implemented on top (\eg type erasure). Since our
+environment supports x86 it does not impose any such restrictions.
+Combined with compiler infrastructure such as LLVM (which already
+contains support for Native Client implemented as a part of PNaCl) it
+could form an excellent runtime for new programming languages.
+
+MVM\footnote{\url{http://https://mvm.dev.java.net/}} was never finished
+
+JVM does not support optimalization such as SSE or AVX
+CPython, YARVM have severe restrictions such single thread (GIL)
+
+VMM require an entire operating system to be run, in situation when
+typical OS installation requires tens of GB of storage space, GB of
+memory, using a VM for application which have a size in order of MB is
+ridiculous. Furthermore such OS requires maintenance (installing updates,
+managing configuration), in terms of TCB, typical kernel can be in
+order of MLOC, even hypervisor has MLOC while NaCl is kLOC
+
+
+
+Embedding interface as a way to obtain descriptors
+Representing everything as descriptors which can be transfered across
+processes \ldots
