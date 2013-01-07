@@ -71,7 +71,8 @@
 
 \title{\bf Microkernel in User Space}
 \author{
-Petr Hosek\footnote{Work done while an intern at \textit{Google Inc}.}\\\textit{Imperial College London}
+Petr Hosek\footnote{The author conducted this work while employed by
+Google.}\\\textit{Imperial College London}
 \and Bennet Yee\\\textit{Google Inc.}
 }
 \date{}
@@ -79,32 +80,46 @@ Petr Hosek\footnote{Work done while an intern at \textit{Google Inc}.}\\\textit{
 \thispagestyle{empty}
 
 \begin{abstract}
-In recent years, together with the rising popularity of cloud computing
-we have witnessed a boom of virtualization. Most of the software
-infrastructure which is being used nowadays runs virtualized in some
-form. However, existing virtualization solutions are still too limited
-despite obvious advantages such as portability, security and isolation.
-Virtual machine monitors require the user to run an entire operating
-system, which is suitable for infrastructure provisioning in data centers
-as well as certain cloud applications, but is simply too cumbersome for
-desktop and client applications.  Language runtimes on the other hand
-are typically targeting only a single high-level language (or family) making
-them unsuitable for native applications.
- 
-In this paper, we propose an alternative approach. We aim to combine
-aspects of microkernel and hybrid kernel design with software fault
-isolation techniques to provide a lightweight solution for
-virtualizating existing POSIX-based applications entirely in user space.
-Our proposed approach is portabile, allows applications to be run on top
-of three major operating systems without modifications or even
-recompilation, and does not incur significant performance overhead.
-\todo{Shall we say any operating system---even though Native Client only
-supports Windows, Linux and OS X at the moment, it should be possible to
-add support for other operating systems if needed.  I'd rather not:
-there are OSes to which porting NaCl would be difficult, e.g., missing
-some basic IPC mechanism.  Also, the portability currently has an
-ISA-dependency in NaCl (vs lack of assembly in PNaCl)---this is probably
-too much detail for the abstract.}
+We propose a new type of application virtual machine capable of running
+native applications. We aim to combine aspects of a microkernel design
+with the existing software fault isolation technology to provide the
+POSIX compliant execution environment. Such execution environment
+presents an alternative to existing hardware-based hypervisors providing
+the strong security assurances at fractional trusted code base size
+without the necessity of running an entire operating system. The
+portable user space implementation allows native applications to be run
+on top of three major operating systems with minimal overhead. Well
+defined external interface allows the execution environment to be
+embedded with an existing systems.
+
+%We propose a new type of application virtual machine capable of running
+%native applications. We aim to combine aspects of a microkernel design
+%with the existing software fault isolation technology to provide the
+%POSIX compliant execution environment delivering the security assurances
+%comparable to the existing hardware-based hypervisors with the
+%portability of language runtimes.
+
+%Such execution environment presents a  alternative to existing
+%hardware-based hypervisors providing the strong security assurances at
+%fractional trusted code base size without the necessity of running an
+%entire operating system. Well defined external interface allows the
+%execution environment to be embedded with an existing systems.
+
+%Our proposed approach is portable, allows applications to be run on top
+%of three major operating systems, and does not incur significant
+%performance overhead.
+
+%In recent years, together with the rising popularity of cloud computing
+%we have witnessed a boom of virtualization. Most of the software
+%infrastructure which is being used nowadays runs virtualized in some
+%form. However, existing virtualization solutions are still too limited
+%despite obvious advantages such as portability, security and isolation.
+%Virtual machine monitors require the user to run an entire operating
+%system, which is suitable for infrastructure provisioning in data centers
+%as well as certain cloud applications, but is simply too cumbersome for
+%desktop and client applications.  Language runtimes on the other hand
+%are typically targeting only a single high-level language (or family) making
+%them unsuitable for native applications.
 \end{abstract}
 
 \input{intro}

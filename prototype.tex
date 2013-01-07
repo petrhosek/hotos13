@@ -1,21 +1,99 @@
 \section{Prototype}
 \label{sec:prototype}
 
-\begin{structure}
-\item Process support issues (\eg no fork on Windows)
-\item Proposed approach with process service
-\item Memory sharing between processes
-\item Memory service design
-\end{structure}
+Native Client combines two sandboxing mechanisms. The inner sandbox
+supports restricted subset of x86, x86-64 and ARM ISA defined by a set
+of constraints, a modified compilation tool chain that observes these
+constrains, and a static validator that verifies that the constrains
+have been followed. To sandbox data accesses, Native Client uses
+different hardware mechanisms depending on target hardware
+platform~\cite{yee:ieee-sp09,sehr:usenix-sec10}. For additional
+security, Native Client optionally uses additional outer sandbox
+implemented as a traditional OS system-call interception (\eg using
+seccomp~\cite{seccomp:linux} or
+seccomp\mbox{-}bpf~\cite{seccomp-bpf:linux}).
 
-The goal is to provide full POSIX interface. Although Native Client
-already provides a subset of this interface, which allows porting some
-of the existing POSIX based code, it is still missing certain interfaces
-which makes it difficult to run existing applications simply by
-recompiling them using NaCl tool chain.  We believe that it is possible
-to implement the missing functionality using microkernel design to
-provide a fast yet portable and safe alternative to the existing VM
-implementations.
+\begin{figure}
+\centering
+%\includegraphics{architecture}
+\caption{Overview of core NaCl components}
+\label{fig:overview}
+\end{figure}
+
+The sandbox is implemented as the part of \emph{service runtime}, a
+native executable which provides resource abstractions to isolate NaCl
+applications from host resources and underlying operating system
+interfaces. Even though it shares a process with the contained NaCl
+module, the sandbox prevents untrusted code from inappropriate accesses.
+The service runtime functionality is only accessible through system
+calls which resemble standard kernel system calls by performing a
+``context switch'' from untrusted to trusted code, even though they use
+a different hardware mechanism. The service runtime implements some
+aspects of the sandbox in terms of services (\eg name service). All
+services are implemented using Simple RPC (SRPC), a simple and basic
+remote method invocation mechanism supporting only basic data types (\ie
+\lstinline`int`, \lstinline`float`, \lstinline`char` in addition to
+arrays and internal descriptors).
+
+Although Native Client already provides a subset of POSIX interface,
+which allows porting some of the existing POSIX based code, it is still
+missing certain interfaces which makes it difficult to run existing
+applications simply by recompiling them using NaCl tool chain.
+
+Rather than implementing the missing interfaces as a part of service
+runtime unnecessarily increasing the TCB size, we believe that it is
+possible to implement the missing POSIX interfaces using the microkernel
+design by implementing the majority of functionality in the untrusted
+code to provide a fast yet portable and secure alternative to the
+existing VM implementations.
+
+While service runtime is the in-process sandbox enforcing fault
+isolation and providing facilities such as network communication, memory
+management, resource abstraction or the system call interface, it is the
+\emph{reverse service} which provides inter-process services such as
+file access, process support or IPC facilities.
+
+Following the Liedtke's~\cite{liedtke:sosp93} minimality principle, the
+service runtime should provide only the core functionality:
+\begin{itemize}
+\item managing the address space, in particular the memory protection to
+	ensure that all data accesses are properly sandboxed; 
+\item threads as an abstraction for allocating CPU;
+\item IPC mechanism necessary to invoke remote services, in Native
+	Client realized through internal descriptors.
+\end{itemize}
+
+While the operations on descriptors are implemented as NaCl system calls
+for efficiency, the majority of interfaces provided to untrusted should
+be implemented in terms of IPC as SRPC services. IRT allows us to
+abstracts these differences and provides unified interface. The
+advantage of using services over system calls is extensibility and
+easier development, the disadvantage is primarily performance overhead
+as each service method invocation requires several system calls (\ie
+sequence of \lstinline`sendmsg`/\lstinline`recvmsg` invocations).
+
+To abstract away the internal details Native Client provides
+\emph{Integrated Runtime} (IRT), an untrusted library providing a
+stable, backward compatible interface to a NaCl module. IRT ensures that
+once compiled, NaCl module will run forever even with a newer version of
+service runtime. Facilities provided to untrusted code may be
+implemented either as NaCl system calls or as SRPC services. IRT
+abstracts these differences and provides unified interface. The
+advantage of using services over system calls is extensibility and
+easier development, the disadvantage is primarily performance overhead
+as each service method invocation requires several system calls (\ie
+sequence of \lstinline`sendmsg`/\lstinline`recvmsg` invocations).
+
+The Application Binary Interface (ABI) exposed to the untrusted code is
+modeled after POSIX ABI and includes subset of the POSIX thread
+interface as well as common POSIX file I/O interfaces.  However,
+application programmers do not typically use the ABI directly, instead
+they use one of the provided C libraries (\ie Newlib or Glibc) which hide
+away internal details and provide common interface.
+
+
+
+The services together with the IRT form an \emph{embedding interface}.
 
 \todo{Introduce embedding interface as a realization of microkernel
 design and a way to provide extensibility and flexibility.}
@@ -34,12 +112,6 @@ design and a way to provide extensibility and flexibility.}
 \label{fig:architecture}
 \end{figure}
 
-While service runtime is the in-process sandbox enforcing fault
-isolation and providing facilities such as network communication, memory
-management, resource abstraction or the system call interface, it is the
-\emph{reverse service} which provides inter-process services such as
-file access, process support or IPC facilities.
-
 When started, each service runtime instance is identified by the
 secure socket address which is used to establish the \emph{secure
 command channel}. This channel is used to control the runtime execution,
@@ -53,6 +125,12 @@ effective process parent. While it is indeed possible to have multiple
 command channels, there has to be at least one channel at any given
 point.  When the last command channel is disconnected, the service
 runtime immediately terminates the execution.
+
+
+Memory service is again largely implemented in the untrusted code
+resembling the microkernel architecture.
+
+IRT is a part of the embedding interface
 
 %Each service runtime instance has a connection to reverse service. The
 %\emph{initial} service runtime has a connection to the trusted reverse
@@ -144,14 +222,6 @@ entirely in the untrusted code.
 \subsection{Memory Service}
 \label{sub:memory_service}
 
-\begin{structure}
-\item Memory Service used for fork emulation;
-\item Page protection and user-level exceptions used to detect
-  writes to shared pages to emulate copy-on-write;
-\item Assumes same protection domain, so badly behaving application
-  can only harm themselves.
-\end{structure}
-
 To allow implementing \lstinline`fork` emulation including copy-on-write
 semantics, embedding interface needs to provide the \emph{memory
 service}. When used, all process memory will be backed by a shared
@@ -182,11 +252,6 @@ particular on Linux and OS X (\ie mmap on top of existing mapping).
 However, on Windows where memory has to be unmapped first and therefore
 over-mapping is not atomic, we have to stop all threads while memory
 pages are being manipulated.
-
-Memory service is again largely implemented in the untrusted code
-resembling the microkernel architecture.
-
-IRT is a part of the embedding interface
 
 %User-level fork emulation library manages address space.  All memory
 %are backed by shared memory, though initially not necessarily actually

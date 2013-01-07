@@ -1,116 +1,137 @@
 \section{Overview}
 \label{sec:overview}
 
-\begin{structure}
-\item High-level overview of our approach.
-\item What is NaCl and how does it work?
-\item NaCl architecture and components (with figure)
-\end{structure}
+%In this position paper, we argue for a lightweight VM capable of
+%executing native code providing the standard POSIX interface.  We aim to
+%combine \emph{software fault isolation} (SFI)~\cite{wahbe:sosp93} for
+%security and isolation properties with microkernel-style service
+%oriented architecture to provide process management, file and network
+%access. Based on top of Native Client~\cite{yee:ieee-sp09}, a state of
+%the art industrial strength SFI implementation, this solution can
+%provide security and performance assurances comparable to existing
+%system virtual machines at a fractional \emph{trusted code base} (TCB)
+%size which allows for easier verification and maintenance.
 
-%we need to talk about files as a service -- naturally comes up in the
-%microkernel structure stuff -- and how file service handles namespaces
-%but file I/O is essentially native
+Hypervisors these days rely on virtualization hardware to deliver
+reasonable performance overhead. This makes the hypervisor the most
+privileged process effectively replacing the OS~\cite{heiser:hotos11}.
+Needles to say, it makes the hypervisor a critical part of the entire
+execution stack.  It does not matter whether the hypervisor is over 1
+MLOC~\cite{barham:sosp03} or just a few kLOC~\cite{steinberg:eurosys10},
+any vulnerability in the hypervisor implementation may potentially
+subvert the security of all hosted operating systems. This is a serious
+issue in multi-tenant environment where different host operating systems
+may run software from different customers.
 
-We aim to provide an application virtual machine (VM) capable of running
-existing POSIX-based applications with minimal or no changes at all. The
-main goal of our approach is to provide the same security and isolation
-assurances as hardware-based hypervisors (\eg Xen or KVM), but
-implemented entirely in the user space on top of existing monolithic
-kernel resembling language runtimes (\eg JVM).
+We aim for a different approach. Instead of virtualization hardware, we
+plan to employ software fault isolation~\cite{wahbe:sosp93} to direct
+all system interactions through controlled interfaces. This allows
+implementing the VM entirely in the userspace as a regular process
+without any access to privileged CPU features. Even if the security of
+the VM is compromised, the attacker is still limited by the userspace
+boundary. To further increase security, it is possible to employ other
+sandboxing mechanisms such as seccomp-bpf~\cite{seccomp-bpf:linux}.
 
-\todo{Talk about files as a service---naturally comes up in the
-microkernel structure stuff---and how file service handles namespaces
-but file I/O is essentially native.}
+We believe it is indeed possible to implement a simple and secure
+virtualization environment sharing the approach with microkernel-based
+systems. These systems follow the minimality principle, providing only a
+minimal set of abstractions. Minimizing the trusted TCB size
+significantly reduces the attack surface and increases the overall
+security of the system. The reduced TCB size also allows for easier
+security audits. Compared to on-the-metal microkernels, we rely on the
+existing monolithic kernel (\ie Linux, OS X or Windows) to do the
+``heavy lifting'' which means that the various microkernel-related
+overheads (\eg context switch) still exists. The benefits of our
+approach are mainly structural; since the VM is implemented entirely in
+the user space, it does not require any special privileges. This makes
+component/module replacement significantly easier.
 
-We argue that the optimal way of implementing such a VM is to combine SFI
-with microkernel style design.
-\todo{Try to come up with a better argumentation.}
-Compared to on-the-metal microkernels, there are number of significant
-differences. First of all, we rely on existing monolithic kernel (\ie
-Linux, OS X or Windows) to do the ``heavy lifting'' (in particular
-handling hardware) eliminating the need for device drivers. Second,
-various microkernel-related overheads (\eg context switch) still exist
-which may introduce additional performance overhead. The benefits of our
-approach are structural; since the VM is implemented entirely in the
-user space, it doesn't require any special privileges which makes
-component/module replacement significantly easier. The reduced TCB also
-size allows for easier security audits.
+By providing POSIX compliant environment, it will allow execution of the
+existing native application with minimal CPU, memory and I/O overhead
+making it a lightweight alternative to existing hypervisors.  Since the
+VM provides resource abstraction decoupling the application from the
+host OS, it allows the same executable to run on top of three popular
+operating systems. This makes it an excellent alternative to existing
+language runtimes (\eg JVM). By targeting a subset of x86, it does not
+impose any restrictions on the target language.  Furthermore, by
+providing direct access to CPU and memory, it allows developers to
+leverage the underlying hardware including extended instruction sets
+(\eg SSE, AVX).
 
-\begin{figure}
-\centering
-%\includegraphics{architecture}
-\caption{Overview of core NaCl components}
-\label{fig:overview}
-\end{figure}
+%Combined with compiler infrastructure such as LLVM, which already
+%contains support for Native Client implemented as a part of
+%PNaCl~\cite{donovan:pnacl10}, it could form a basis for portable and
+%secure execution runtime for new programming languages.
 
-Our proposed solution will be based on top of Native Client (commonly
-abbreviated ``NaCl'' when used as an adjective), an open-source
-production-quality SFI-based sandbox for the safe execution of
-untrusted, multi-threaded user-level machine code. While primarily aimed
-towards executing native compiled code inside the web browser, the NaCl
-core components, depicted in Figure~\ref{fig:architecture}, can be also
-used as a general-purpose sandbox.
+Based on top of Native Client~\cite{yee:ieee-sp09}, a state of the art
+open-source industrial strength SFI implementation, this solution can
+provide security and performance assurances comparable to existing
+system virtual machines at a fractional \emph{trusted code base} (TCB)
+size which allows for easier verification and maintenance. 
 
-\todo{Do mention that NaCl has been security audited, this was possible
-because of the small TCB size.}
+Providing the external interface will allow embedding
+the VM into existing applications \ldots
 
-Native Client combines two sandboxing mechanisms. The inner sandbox
-supports restricted subset of x86, x86-64 and ARM ISA defined by a set
-of constraints, a modified compilation tool chain that observes these
-constrains, and a static validator that verifies that the constrains
-have been followed. To sandbox data accesses, Native Client uses
-different hardware mechanisms depending on target hardware
-platform~\cite{yee:ieee-sp09,sehr:usenix-sec10}. For additional
-security, Native Client optionally uses additional outer sandbox
-implemented as a traditional OS system-call interception (\eg using
-seccomp~\cite{seccomp:linux} or
-seccomp\mbox{-}bpf~\cite{seccomp-bpf:linux}).
+%Virtualization became the way to solve the problem of portability by
+%abstracting the underlying software and/or hardware upon which
+%our applications run.
 
-The sandbox is implemented as the part of \emph{service runtime}, a native
-executable which provides resource abstractions to isolate NaCl
-applications from host resources and underlying operating system
-interfaces. Even though it shares a process with the contained NaCl
-module, the sandbox prevents untrusted code from inappropriate accesses.
-The service runtime functionality is only accessible through system
-calls which resemble standard kernel system calls by performing a
-``context switch'' from untrusted to trusted code, even though they use
-a different hardware mechanism. The service runtime implements some
-aspects of the sandbox in terms of services (\eg name service). All
-services are implemented using Simple RPC (SRPC), a simple and basic
-remote method invocation mechanism supporting only basic data types (\ie
-\lstinline`int`, \lstinline`float`, \lstinline`char` in addition to
-arrays and internal descriptors).
+%The three key abstractions that a microkernel should
+%provide~\cite{liedtke:sosp93} are address spaces, threads and
+%inter-process communication (IPC).
 
-\todo{Talk about portability; the same NaCl application can run on
-Linux, OS X and Windows as long as the hardware architecture is the
-same, with PNaCl even this restriction is lifted (compare to JVM and
-other language runtimes).}
+%Our proposed solution extends Native Client (NaCl), an open-source
+%production-quality SFI-based sandbox for the safe execution of
+%untrusted, multi-threaded user-level machine code. While primarily aimed
+%towards executing native compiled code inside the web browser, the NaCl
+%core components, depicted in Figure~\ref{fig:architecture}, can be also
+%used as a general-purpose sandbox.
 
-%SRPC is implemented entirely in untrusted code on top the
-%IMC (Inter-Module Communications), Native Client's reliable datagram
-%service. External data representation strategies can easily be layered
-%on top of SRPC.
+%In this position paper, we argue for a lightweight VM capable of
+%executing native code providing the standard POSIX interface. The
+%original goal of POSIX standard was to maintain compatibility between
+%operating systems, hence the name \emph{Portable Operating System
+%Interface}. While it has not fully succeeded for a number of different
+%reasons (\eg ABI differences, non-standard extensions), we believe it
+%still represents an ideal interface for application execution
+%environment. 
 
-To abstract away the internal details Native Client provides
-\emph{Integrated Runtime} (IRT), an untrusted library providing a
-stable, backward compatible interface to a NaCl module. IRT ensures that
-once compiled, NaCl module will run forever even with a newer version of
-service runtime. Facilities provided to untrusted code may be
-implemented either as NaCl system calls or as SRPC services. IRT
-abstracts these differences and provides unified interface. The
-advantage of using services over system calls is extensibility and
-easier development, the disadvantage is primarily performance overhead
-as each service method invocation requires several system calls (\ie
-sequence of \lstinline`sendmsg`/\lstinline`recvmsg` invocations).
+%Over the past few years, Java virtual machine (JVM) with its ``write
+%once, run everywhere'' capability became a popular platform for
+%development of cross-platform applications as well as a popular target
+%as a runtime environment for new programing languages. While providing
+%secure environment was one of the original JVM goals, the number of
+%security vulnerabilities found in older as well as recent versions shows
+%otherwise. That is why existing PaaS providers such as Google App Engine
+%run Java applications in custom sandboxed environment. Furthermore,
+%since JVM was designed originally for Java language, despite recent
+%improvements such as the Da Vinci Machine
+%Project\footnote{\url{http://openjdk.java.net/projects/mlvm/}}, it still
+%imposes number of restrictions on the languages implemented on top (\eg
+%type erasure). The situation is similar with other language runtime such
+%as CPython or YARV.
 
-\todo{IRT can be seen as a part of embedding interface.}
+%Since our environment targets subset of x86, it does not impose any
+%restrictions on target language.  Combined with compiler infrastructure
+%such as LLVM, which already contains support for Native Client
+%implemented as a part of PNaCl~\cite{donovan:pnacl10}, it could form a
+%basis for portable and secure execution runtime for new
+%programming languages.
 
-The Application Binary Interface (ABI) exposed to the untrusted code is
-modeled after POSIX ABI and includes subset of the POSIX thread
-interface as well as common POSIX file I/O interfaces.  However,
-application programmers do not typically use the ABI directly, instead
-they use one of the provided C libraries (\ie Newlib or Glibc) which hide
-away internal details and provide common interface.
+%Furthermore, native code support together with the full POSIX interface
+%allows running existing language runtimes on top of our VM
+%without the necessity of ad-hoc sandboxing mechanism since the
+%environment itself already provides sandboxing capabilities. This has a
+%number of advantages.  First, it is possible to use ``vanilla'' language
+%runtimes which allows for upgrading to a newer version immediately after
+%they are released significantly reducing the risk of zero-day
+%vulnerabilities. Second, it allows provisioning of wider range of
+%runtimes potentially attracting more customers, even those using less
+%popular languages and platforms.  Third, it will allow use of native
+%extensions supported by most language runtimes, but not always available
+%in PaaS environments for security reasons.
+
+\todo{Explain why Native Client is an ideal solution.}
 
 %The NaCl architecture resembles existing micro and hybrid kernels.
 %However, compared to on-the-metal microkernels, there are number of

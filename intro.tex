@@ -8,27 +8,45 @@
 %In recent years, virtualization has become crucialy important for \ldots
 %multi-tenancy, cloud computing.
 
-In this paper, we propose an application virtual machine (VM) capable of
-running existing POSIX-based applications with minimal or no changes at
-all. The main goal of our approach is to provide the same security and
-isolation assurances as hardware-based hypervisors (\eg Xen or KVM), but
-implemented entirely in the user space on top of existing monolithic
-kernel resembling language runtimes (\eg JVM).
- 
-In recent years, with the rising popularity of cloud computing,
-virtualization has become crucially important as a way to provide
-\emph{multi-tenancy}. While the \emph{Infrastructure as a Service} (IaaS)
-model assumes provisioning an entire operating system using virtual
-machine monitors (\eg Google Compute Engine), the \emph{Platform as a
-Service} (PaaS) model typically relies on a language runtimes (\eg
-Google App Engine). The~advantage of the former is a finer degree of
-control over the entire application stack while the latter allows for
-better resource utilization. A~modern hypervisor uses hardware
-virtualization technology to enforce isolation and resource allocation;
-in case of language runtimes, ad-hoc sandboxing mechanisms are typically
-being used to provide the same guarantees, which results in a limited
-number of supported platforms (\eg Java, Python and Go in case of Google
-App Engine).
+Virtualization, in its many forms, seems to have become the universal
+solution to a number of problems including security and portability.
+With the rising popularity of cloud computing, virtualization has also
+become crucially important as a way to ensure \emph{multi-tenant
+security}. The XaaS applications can run either on top of virtual
+machine monitor where the customer is provided with the entire operating
+system (\eg Google Compute Engine) or on top of existing language
+runtime (\eg Google App Engine).
+
+While the operating system-level virtualization is desirable in cases
+when we require a control over the entire execution stack, it can be
+simply too cumbersome when we need to execute only a single application.
+A typical OS installation may require storage space in the order of GB
+plus additional CPU and memory overhead for running the kernel and
+system services. Furthermore, the guest OS requires a frequent
+maintenance (\eg installing updates, managing configuration). Language
+runtimes on the other hand, while being more lightweight, only target a
+single high-level language. 
+
+In this position paper, we argue for an application virtual machine (VM)
+capable of running existing POSIX-based applications. The main goal of
+our approach is to provide the same security and isolation assurances as
+hardware-based hypervisors (\eg Xen or KVM), but implemented entirely in
+the user space on top of existing monolithic kernel resembling language
+runtimes (\eg JVM).
+
+%With the rising popularity of cloud computing, virtualization has become
+%crucially important as a way to provide \emph{multi-tenancy}. While the
+%\emph{Infrastructure as a Service} (IaaS) model assumes provisioning an
+%entire operating system using virtual machine monitors (\eg Google
+%Compute Engine), the \emph{Platform as a Service} (PaaS) model typically
+%relies on a language runtimes (\eg Google App Engine). The~advantage of
+%the former is a finer degree of control over the entire application
+%stack while the latter allows for better resource utilization. A~modern
+%hypervisor uses hardware virtualization technology to enforce isolation
+%and resource allocation; in case of language runtimes, ad-hoc sandboxing
+%mechanisms are typically being used to provide the same guarantees,
+%which results in a limited number of supported platforms (\eg Java,
+%Python and Go in case of Google App Engine).
 
 %As cloud providers can use multi-tenancy run large number of
 %applications---potentially coming from different customers---under a
@@ -44,19 +62,6 @@ App Engine).
 %number of supported platforms is limited to Java, Python and Go using
 %custom sandboxed runtimes.
 
-In this position paper, we propose a virtualization technology which
-combines the advantages of both approaches. We argue for an application
-virtual machine capable of executing native code providing the standard
-POSIX interface. We aim to combine \emph{software fault isolation}
-(SFI)~\cite{wahbe:sosp93} for security and isolation properties with
-microkernel-style service oriented architecture to provide process
-management, file and network access. Based on top of Native
-Client~\cite{yee:ieee-sp09}, a state of the art industrial strength SFI
-implementation, this solution can provide security and performance
-assurances comparable to existing system virtual machines at a
-fractional \emph{trusted code base} (TCB) size which allows for easier
-verification and maintenance. 
-
 Such an execution environment could form the basis for a new kind of
 POSIX compliant PaaS native platform, which will allow for execution of
 high-performance applications. Such a platform will be more efficient
@@ -64,25 +69,25 @@ than traditional virtualization and some language based sandboxes while
 more flexible than Linux-based systems, akin to virtual machines.
 Furthermore, native code support will enable the use of existing C/C++
 libraries and legacy code as well as extended instruction sets (\eg SSE
-or AVX) for high-performance applications. Example of such a service is
-Google Exacycle\footnote{See
+or AVX) for high-performance applications. An example of such a service
+is Google Exacycle\footnote{See
 \url{http://research.google.com/university/exacycle_program.html} and
 \url{http://googleresearch.blogspot.com/2011/04/1-billion-core-hours-of-computational.html}.},
-which provides PaaS platform for large-scale, embarrasingly parallel
+which provides a PaaS platform for large-scale, embarrasingly parallel
 batch computations.
 
-Furthermore, native code support together with full POSIX interface
-allows running existing runtimes on top of our execution environment
-without the necessity of ad-hoc sandboxing mechanism since the
-environment itself already provides sandboxing capabilities. This has a
-number of advantages.  First, it is possible to use ``vanilla'' language
-runtimes which allows for upgrading to a newer version immediately after
-they are released significantly reducing the risk of zero-day
-vulnerabilities. Second, it allows provisioning of wider range of
-runtimes potentially attracting more customers, even those using less
-popular languages and platforms.  Third, it will allow use of native
-extensions supported by most language runtimes, but not always available in
-PaaS environments for security reasons.
+%Furthermore, native code support together with full POSIX interface
+%allows running existing runtimes on top of our execution environment
+%without the necessity of an ad-hoc sandboxing mechanism since the
+%environment itself already provides sandboxing capabilities. This has a
+%number of advantages.  First, it is possible to use ``vanilla'' language
+%runtimes which allows for upgrading to a newer version immediately after
+%they are released significantly reducing the risk of zero-day
+%vulnerabilities. Second, it allows provisioning of wider range of
+%runtimes potentially attracting more customers, even those using less
+%popular languages and platforms.  Third, it will allow use of native
+%extensions supported by most language runtimes, but not always available in
+%PaaS environments for security reasons.
 
 %The solution based on Native Client would allow executing native
 %POSIX-compliant code at near native speed while providing the same
@@ -124,40 +129,3 @@ Section~\ref{sec:conclusion} concludes.
 %existing applications in the user space. Furthemore, our proposed
 %approach allows applications to be run on top of three major operating
 %system without recompilation.
-
-The original goal of POSIX was to provide compatibility across different
-UNIX implementation. Unfortunately it failed because number of reasons
-including non-standard extensions, different binary formats, \ldots
-
-Furthermore, the POSIX subsystem for Windows has recently been
-discontinued and Cygwin does not have binary compatibility. 
-
-The lightweight virtual machine will provide an excellent alternative to
-JVM \ie compile once run everywhere, which is now being used as a
-runtime environment for number of programming languages.  While one of
-the goals of JVM was to provide secure environment, a number of recent
-security vulnerabilities shows otherwise. Furthermore, since JVM was
-designed originally for Java language, it imposes number of restrictions
-on the languages implemented on top (\eg type erasure). Since our
-environment supports x86 it does not impose any such restrictions.
-Combined with compiler infrastructure such as LLVM (which already
-contains support for Native Client implemented as a part of PNaCl) it
-could form an excellent runtime for new programming languages.
-
-MVM\footnote{\url{http://https://mvm.dev.java.net/}} was never finished
-
-JVM does not support optimalization such as SSE or AVX
-CPython, YARVM have severe restrictions such single thread (GIL)
-
-VMM require an entire operating system to be run, in situation when
-typical OS installation requires tens of GB of storage space, GB of
-memory, using a VM for application which have a size in order of MB is
-ridiculous. Furthermore such OS requires maintenance (installing updates,
-managing configuration), in terms of TCB, typical kernel can be in
-order of MLOC, even hypervisor has MLOC while NaCl is kLOC
-
-
-
-Embedding interface as a way to obtain descriptors
-Representing everything as descriptors which can be transfered across
-processes \ldots
