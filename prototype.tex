@@ -1,105 +1,51 @@
 \section{Prototype}
 \label{sec:prototype}
 
-Native Client combines two sandboxing mechanisms. The inner sandbox
-supports restricted subset of x86, x86-64 and ARM ISA defined by a set
-of constraints, a modified compilation tool chain generating code that
-observes these constrains, and a static validator that verifies that
-the constrains have been followed. To sandbox data accesses, Native
-Client uses different hardware mechanisms depending on target hardware
-platform~\cite{yee:ieee-sp09,sehr:usenix-sec10}. For additional
-security, Native Client optionally uses additional outer sandbox
-implemented as a traditional OS system-call interception (\eg using
-seccomp~\cite{seccomp:linux} or
-seccomp\mbox{-}bpf~\cite{seccomp-bpf:linux}).
+%Although Native Client already provides a subset of POSIX interface,
+%which allows porting some of the existing POSIX based code, it is still
+%missing certain interfaces which makes it difficult to run existing
+%applications simply by recompiling them using NaCl tool chain.
 
-\begin{figure}
-\centering
-%\includegraphics{architecture}
-\caption{Overview of core NaCl components}
-\label{fig:overview}
-\end{figure}
+%Rather than implementing the missing interfaces as a part of service
+%runtime unnecessarily increasing the TCB size, we believe that it is
+%possible to implement the missing POSIX interfaces using the microkernel
+%design by implementing the majority of functionality in the untrusted
+%code to provide a fast yet portable and secure alternative to the
+%existing VM implementations.
 
-The sandbox is implemented as the part of \emph{service runtime}, a
-native executable which provides resource abstractions to isolate NaCl
-applications from host resources and underlying operating system
-interfaces. Even though it shares a process with the contained NaCl
-module, the sandbox prevents untrusted code from inappropriate accesses.
-The service runtime functionality is only accessible through system
-calls which resemble standard kernel system calls by performing a
-``context switch'' from untrusted to trusted code, even though they use
-a different hardware mechanism. The service runtime implements some
-aspects of the sandbox in terms of services (\eg name service). All
-services are implemented using Simple RPC (SRPC), a simple and basic
-remote method invocation mechanism supporting only basic data types (\ie
-\lstinline`int`, \lstinline`float`, \lstinline`char` in addition to
-arrays and internal descriptors).
+%While service runtime is the in-process sandbox enforcing fault
+%isolation and providing facilities such as network communication, memory
+%management, resource abstraction or the system call interface, it is the
+%\emph{reverse service} which provides inter-process services such as
+%file access, process support or IPC facilities.
 
-Although Native Client already provides a subset of POSIX interface,
-which allows porting some of the existing POSIX based code, it is still
-missing certain interfaces which makes it difficult to run existing
-applications simply by recompiling them using NaCl tool chain.
+%Following the Liedtke's~\cite{liedtke:sosp93} minimality principle, the
+%service runtime should provide only the core functionality:
+%\begin{itemize}
+%\item managing the address space, in particular the memory protection to
+	%ensure that all data accesses are properly sandboxed; 
+%\item threads as an abstraction for allocating CPU;
+%\item IPC mechanism necessary to invoke remote services, in Native
+	%Client realized through internal descriptors.
+%\end{itemize}
 
-Rather than implementing the missing interfaces as a part of service
-runtime unnecessarily increasing the TCB size, we believe that it is
-possible to implement the missing POSIX interfaces using the microkernel
-design by implementing the majority of functionality in the untrusted
-code to provide a fast yet portable and secure alternative to the
-existing VM implementations.
+In this section, we propose a possible design of services to provide
+support for process creation and control, file and directory operations.
+All services are implemented using SRPC. This mechanism only support
+basic data types (\ie \lstinline`int`, \lstinline`float`,
+\lstinline`char`) in addition to arrays and internal descriptors. These
+are being used (mostly) as capabilities. For efficiency, the operations
+on descriptors are implemented as NaCl system calls.
 
-While service runtime is the in-process sandbox enforcing fault
-isolation and providing facilities such as network communication, memory
-management, resource abstraction or the system call interface, it is the
-\emph{reverse service} which provides inter-process services such as
-file access, process support or IPC facilities.
+%While the operations on descriptors are implemented as NaCl system calls
+%for efficiency, the majority of interfaces provided to untrusted should
+%be implemented in terms of IPC as SRPC services. IRT allows us to
+%abstract these differences and provides unified interface. The
+%advantage of using services over system calls is extensibility and
+%easier development, the disadvantage is primarily performance overhead
+%as each service method invocation requires several system calls (\ie
+%sequence of \lstinline`sendmsg`/\lstinline`recvmsg` invocations).
 
-Following the Liedtke's~\cite{liedtke:sosp93} minimality principle, the
-service runtime should provide only the core functionality:
-\begin{itemize}
-\item managing the address space, in particular the memory protection to
-	ensure that all data accesses are properly sandboxed; 
-\item threads as an abstraction for allocating CPU;
-\item IPC mechanism necessary to invoke remote services, in Native
-	Client realized through internal descriptors.
-\end{itemize}
-
-While the operations on descriptors are implemented as NaCl system calls
-for efficiency, the majority of interfaces provided to untrusted should
-be implemented in terms of IPC as SRPC services. IRT allows us to
-abstract these differences and provides unified interface. The
-advantage of using services over system calls is extensibility and
-easier development, the disadvantage is primarily performance overhead
-as each service method invocation requires several system calls (\ie
-sequence of \lstinline`sendmsg`/\lstinline`recvmsg` invocations).
-
-\todo{Needs work.  IRT used above, defined below.}
-
-To abstract away the internal details Native Client provides
-\emph{Integrated Runtime} (IRT), an untrusted library providing a
-stable, backward compatible interface to a NaCl module. IRT ensures that
-once compiled, NaCl module will run forever even with a newer version of
-service runtime. Facilities provided to untrusted code may be
-implemented either as NaCl system calls or as SRPC services. IRT
-abstracts these differences and provides unified interface. The
-advantage of using services over system calls is extensibility and
-easier development, the disadvantage is primarily performance overhead
-as each service method invocation requires several system calls (\ie
-sequence of \lstinline`sendmsg`/\lstinline`recvmsg` invocations).
-
-The Application Binary Interface (ABI) exposed to the untrusted code is
-modeled after POSIX ABI and includes subset of the POSIX thread
-interface as well as common POSIX file I/O interfaces.  However,
-application programmers do not typically use the ABI directly, instead
-they use one of the provided C libraries (\ie Newlib or Glibc) which hide
-away internal details and provide common interface.
-
-The services together with the IRT form an \emph{embedding interface}.
-\todo{Perhaps clarify that embedding interface is what services the
-  embedder of Native Client provides to the NaCl runtime, and that the
-  service runtime may mediate access to (some of) these services.}
-
-\todo{Introduce embedding interface as a realization of microkernel
-design and a way to provide extensibility and flexibility.}
 %The features we want to provide are flexibility and maintainability.
 %\ldots embedding interface \ldots allows to use \ldots in various setups
 %\ie executing native code within a web page, lightweight virtualization
@@ -128,12 +74,6 @@ effective process parent. While it is indeed possible to have multiple
 command channels, there has to be at least one channel at any given
 point.  When the last command channel is disconnected, the service
 runtime immediately terminates the execution.
-
-
-Memory service is again largely implemented in the untrusted code
-resembling the microkernel architecture.
-
-IRT is a part of the embedding interface
 
 %Each service runtime instance has a connection to reverse service. The
 %\emph{initial} service runtime has a connection to the trusted reverse
@@ -222,8 +162,8 @@ allows creating specialized sub-sandboxes, \eg for executing computation
 kernels with restricted priviliges emulating seccomp-like behavior
 entirely in the untrusted code.
 
-\subsection{Memory Service}
-\label{sub:memory_service}
+\subsection{Backing Store}
+\label{sub:backing_store}
 
 \todo{Replace terminology with ``Backing Store''?  We may decide to
   implement this with regular files, for example, which can be
