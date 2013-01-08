@@ -35,7 +35,8 @@ process' address space to ensure that all data accesses are properly
 sandboxed.  Threads are available through a subset of POSIX thread
 interface.  Finally, it implements certain services using Simple RPC
 (SRPC), a simple and basic remote method invocation mechanism, which
-could be used as an IPC mechanism.
+could be used as an IPC mechanism. \todo{Mention that internal
+descriptors could be seen as an efficient IPC mechanism implementation.}
 
 What is missing to allow Native Client being used as a portable VM for
 native applications are standard POSIX interfaces; the existing

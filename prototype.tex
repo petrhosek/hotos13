@@ -1,4 +1,4 @@
-\section{Prototype}
+\section{Prototype of Embedding Interface}
 \label{sec:prototype}
 
 %Although Native Client already provides a subset of POSIX interface,
@@ -29,13 +29,14 @@
 	%Client realized through internal descriptors.
 %\end{itemize}
 
-In this section, we propose a possible design of services to provide
-support for process creation and control, file and directory operations.
-All services are implemented using SRPC. This mechanism only support
-basic data types (\ie \lstinline`int`, \lstinline`float`,
-\lstinline`char`) in addition to arrays and internal descriptors. These
-are being used (mostly) as capabilities. For efficiency, the operations
-on descriptors are implemented as NaCl system calls.
+In this section, we describe a design of embedding interface, in
+particular services to allow support for process creation and control,
+file and directory operations.  All services are implemented using SRPC.
+This mechanism only support basic data types (\ie \lstinline`int`,
+\lstinline`float`, \lstinline`char`) in addition to arrays and internal
+descriptors. These are being used (mostly) as capabilities. For
+efficiency, the operations on descriptors are implemented as NaCl system
+calls.
 
 %While the operations on descriptors are implemented as NaCl system calls
 %for efficiency, the majority of interfaces provided to untrusted should
@@ -61,19 +62,19 @@ on descriptors are implemented as NaCl system calls.
 \label{fig:architecture}
 \end{figure}
 
-When started, each service runtime instance is identified by the
-secure socket address which is used to establish the \emph{secure
-command channel}. This channel is used to control the runtime execution,
-in particular to load the NaCl executable and IRT into memory, to
-establish the reverse channel, to start and stop the process execution.
-The \emph{reverse channel} can be used by the service runtime to access
-the embedding interface.
-
-The process holding the secure command channel can be seen as an
-effective process parent. While it is indeed possible to have multiple
-command channels, there has to be at least one channel at any given
-point.  When the last command channel is disconnected, the service
-runtime immediately terminates the execution.
+The embedding interface runs as a process separate of the service
+runtime instance with each service running in its own thread (or
+process), which improves the robustness and security of the system. When
+started, service runtime is identified by the socket address which is
+used to establish the \emph{command channel}. This channel is used to
+control the runtime execution, in particular to load the NaCl executable
+and IRT into memory, to establish the reverse channel, to start and stop
+the process execution.  The \emph{reverse channel} is used by the
+service runtime to access the embedding interface. The process holding
+the command channel can be seen as an effective process parent. While it
+is indeed possible to have multiple command channels, there has to be at
+least one channel at any given point.  When the last command channel is
+disconnected, the service runtime immediately terminates the execution.
 
 %Each service runtime instance has a connection to reverse service. The
 %\emph{initial} service runtime has a connection to the trusted reverse
@@ -96,109 +97,106 @@ runtime immediately terminates the execution.
 \subsection{Process Support}
 \label{sub:process_support}
 
-While existing NaCl implementation already supports threads, it misses
-process support, important for certain set of applications such as
-interactive shells.  \todo{This introduction is not particularly
-amazing.}
+The support for process creation and control is a part of the POSIX.1,
+Core Services standard, being used by a large number of applications.
+The most important requirement imposed on process support is
+portability. Since the NaCl executable must run on any supported
+platform without recompilation  the process support can only rely on a
+common denominator of the functionality provided by the supported
+underlying operating systems (\ie Windows, Linux and OS X). The POSIX
+specification defines two interfaces for creating new processes,
+\lstinline`fork` and \lstinline`posix_spawn`. While the former creates a
+copy of an existing process, the latter creates a new process from the
+specified image.  However, different operating systems implement
+different subset of these primitives. Linux only provides
+\lstinline`fork` (or \lstinline`clone` as a non-standard extension).
+Windows \lstinline`CreateProcess` is equivalent to POSIX
+\lstinline`posix_spawn`. Only OS X provides both primitives.
 
-First and the most important requirement imposed on process support is
-portability. Native Client executable must run on any supported platform
-without recompilation (as long as the architecture remains the same).
-This means that process support can only rely on a common denominator of
-the functionality provided by the supported underlying operating systems
-(\ie Windows, Linux and OS X). The POSIX specification defines two
-interfaces for creating new processes, \lstinline`fork` and
-\lstinline`posix_spawn`. While the former creates a copy of an existing
-process, the latter creates a new process from the specified image.
-However, different operating systems implement different subset of these
-primitives. Linux only provides \lstinline`fork` (or \lstinline`clone`
-as a non-standard extension).  Windows \lstinline`CreateProcess` is
-equivalent to POSIX \lstinline`posix_spawn`. Only OS X as a fully POSIX
-conformant OS provides both primitives.
-
-Second, the process support must have a clear semantics. This is an
-issue with \lstinline`fork` which is supposed to create the exact copy
-the existing process. However, when using a \lstinline`fork` with a
+The process support must have a clear semantics, which may be an issue
+with \lstinline`fork` which is supposed to create the exact copy the
+existing process. However, when using a \lstinline`fork` with a
 multi-threaded program, we might end up in an inconsistent state since
 only the thread invoking \lstinline`fork` is cloned.  This problem is
-magnified in case of NaCl service runtime which shares the process with
-untrusted code and uses automatic resource management to increase the
-reliability of resource (de)allocation. If we use the \lstinline`fork`
-system call to create a copy of the existing process, the bookkeeping
-information will become invalid (\eg memory mappings, descriptors,
-locks) leading to potentially inconsistent state if
-\lstinline`pthread_atfork` is not used everywhere that it is needed.
+magnified in case of the service runtime which shares the process with
+the untrusted code and uses automatic resource management to increase
+the reliability of resource (de)allocation. If we use the
+\lstinline`fork` system call to create a copy of the existing process,
+the bookkeeping information will become invalid (\eg memory mappings,
+descriptors, locks) leading to potentially inconsistent state.
+%if \lstinline`pthread_atfork` is not used everywhere that it is needed.
 
 %Therefore, following the same philosophy, our main goal when designing
 %the process support for NaCl was to provide an equivalent of the POSIX
 %\lstinline`fork` system call. However, there are two challenges.
 
-To address these challenges, instead of implementing \lstinline`fork`
-like system call, embedding interface will provide process service  with
-a set of methods which may be used to spawn a new instance of
-service runtime returning the secure socket address. Since these methods
-are accessible to applications, we can rely on untrusted libraries (\eg
-IRT) to implement whatever semantics is needed on top these primitives.
-
-Once the new service runtime has been created, the invoking process can
-decide whether it will establish the secure command channel and become
-the parent, or whether it will pass the socket address to another
-process.  This allows creating arbitrary process hierarchy.  While the
-default IRT implementation will resembles the standard POSIX behavior,
-embedders may provide custom IRT implementation which will use a
-different strategy.
+To implement the process support, the embedding interface must provide a
+\emph{process service} with a set of methods which may be used to spawn
+a new instance of service runtime returning the socket address. Since
+these methods are accessible to applications, we can rely on untrusted
+libraries (\ie IRT) to implement whatever semantics is needed on top
+these primitives. Once the new service runtime has been created, the
+invoking process can decide whether it will establish the command
+channel and become the parent, or whether it will pass the socket
+address to another process.  This allows creating arbitrary process
+hierarchy.  While the standard IRT implementation is expected to emulate
+the standard POSIX behavior, embedders may provide a custom IRT
+implementations which will use a different strategy.
 
 The parent process is responsible for loading the executable image and
 IRT over the command channel and subsequently starting the execution.
-This allows implementing the \lstinline`posix_spawn` like function
+This allows implementation of the \lstinline`posix_spawn` function
 entirely in the untrusted code. To implement \lstinline`fork`, we need a
-way to share memory between processes provided by \emph{memory service},
-further discussed in the next section.
-
-Since the parent process is responsible for setting up the reverse
-service connection, it can subsume the role of embedding interface itself
-and either proxy some of the services or completely replace them. This
-allows creating specialized sub-sandboxes, \eg for executing computation
-kernels with restricted priviliges emulating seccomp-like behavior
-entirely in the untrusted code.
+way to share memory between processes, further discussed in the next
+section.  Since the parent process is responsible for setting up the
+reverse channel connection, it can either pass the socket up to the
+embedded interface, which will likely be the default behavior, or it can
+subsume the role of embedding interface itself. This allows the parent
+to either proxy some of the services or completely replace them. Such
+strategy could be used to further restrict the child process privileges,
+\eg for executing computation kernels with restricted filesystem access
+emulating chroot-like behavior entirely in the untrusted code.
 
 \subsection{Backing Store}
 \label{sub:backing_store}
 
-\todo{Replace terminology with ``Backing Store''?  We may decide to
-  implement this with regular files, for example, which can be
-  \lstinline`MAP_SHARED` by the untrusted library.}
+\todo{We may decide to implement this with regular files, for example,
+which can be \lstinline`MAP_SHARED` by the untrusted library.}
 
-To allow implementing \lstinline`fork` emulation including copy-on-write
-semantics, embedding interface needs to provide the \emph{memory
-service}. When used, all process memory will be backed by a shared
-memory, thought initially not necessarily shared.
+When the process spawns a new subprocess using the \lstinline`fork`
+operation, the child's address space should be an exact copy of its
+parent's.  The inefficient way to implement such behavior would be to
+copy the content of parent's address space. The efficient way, typically
+used by OS kernels, is to use the copy-on-write mechanism.  To allow
+implementation of the \lstinline`fork`-like emulation using the
+copy-on-write semantics, the embedding interface has to provide the
+\emph{backing store}. When used, all the process memory will be backed
+by a shared memory, thought initially not necessarily shared.
 
-When a new subprocess is created, it receives shared memory descriptors
-together with the location in the parent process' address space. Both
-parent and child processes have to change page protection of all memory
-pages to read-only to emulate copy-on-write. On fault, affected page is
-copied to a new shared memory which belongs to the subprocess, the
-reference count to the old page within the original shared memory object
-is decremented, the new shared memory pages are mapped in place of the
-original pages with write permissions, and the affected thread is
-continued.
+When a new subprocess is created, it receives the shared memory
+descriptors together with the location in the parent's process address
+space. Both parent and child processes have to change page protection of
+all memory pages to read-only to emulate copy-on-write, which is a
+responsibility of IRT. On fault, the affected page will be copied to a
+new shared memory which belongs to the subprocess, the reference count
+to the old page within the original shared memory object is decremented,
+the new shared memory pages are mapped in place of the original pages
+with write permissions, and the affected thread is continued.
 
-The memory service will be responsible for managing the shared memory,
+The backing store will be responsible for managing the shared memory,
 in particular (de)allocating the shared memory and automatic reference
 management. This is necessary since shared memory is potentially a
-scarce resource. There is also a space for potentially interesting
-optimizations. First, we do not want a separate shared memory file for
-every page (\eg limit on number of file descriptors, filesystem-related
-overhead), but if the shared memory object is multiple pages in size and
-a ``hole'' in the middle has zero references, we need to find a way to
-reclaim the space. Second, we have to make sure that the memory
-management is safe with respect to threads. This is not an issue on
-systems where altering the existing mapping can be done atomically, in
-particular on Linux and OS X (\ie mmap on top of existing mapping).
-However, on Windows where memory has to be unmapped first and therefore
-over-mapping is not atomic, we have to stop all threads while memory
-pages are being manipulated.
+scarce resource. There is also a space for optimizations. First, we do
+not want a separate shared memory file for every page (\eg limit on
+number of file descriptors, filesystem-related overhead), but if the
+shared memory object is multiple pages in size and a ``hole'' in the
+middle has zero references, we need to find a way to reclaim the space.
+Second, we have to make sure that the memory management is safe with
+respect to threads. This is not an issue on systems where altering the
+existing mapping can be done atomically, in particular on Linux and OS X
+(\ie mmap on top of existing mapping).  However, on Windows where memory
+has to be unmapped first and therefore over-mapping is not atomic, we
+have to stop all threads while memory pages are being manipulated.
 
 %User-level fork emulation library manages address space.  All memory
 %are backed by shared memory, though initially not necessarily actually
@@ -227,5 +225,11 @@ pages are being manipulated.
 \subsection{File Service}
 \label{sub:file_service}
 
+\todo{Talk about file service as a way to expose host's (or other
+machine's) filesystem.}
+
 \subsection{Network Service}
 \label{sub:network_service}
+
+\todo{Accessing the network interface, in particular to binding to
+sockets and accepting incoming connections.}

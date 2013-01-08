@@ -22,10 +22,10 @@ when we require a control over the entire execution stack, it can be
 simply too cumbersome when we need to execute only a single application.
 A typical OS installation may require storage space in the order of GB
 plus additional CPU and memory overhead for running the kernel and
-system services. Furthermore, the guest OS requires a frequent
-maintenance (\eg installing updates, managing configuration). Language
-runtimes on the other hand, while being more lightweight, only target a
-single high-level language. 
+system services. Furthermore, the guest OS may require a frequent
+maintenance (\eg installing updates, managing the configuration).
+Language runtimes on the other hand, while being more lightweight and
+easier to use, typically only target a single high-level language. 
 
 In this position paper, we argue for an application virtual machine (VM)
 capable of running existing POSIX-based applications. The main goal of
@@ -106,10 +106,11 @@ batch computations.
 %not just novelty, but TCB minimization
 
 The rest of this paper is organized as follows.
-Section~\ref{sec:overview} gives an overview of our approach, \ldots.
-Then, Section~\ref{sec:prototype} presents \ldots. Finally,
-Section~\ref{sec:related} discusses related work and
-Section~\ref{sec:conclusion} concludes.
+Section~\ref{sec:motivation} motivates our proposed solution while
+Section~\ref{sec:overview} gives an overview of the technical approach.
+Then, Section~\ref{sec:prototype} presents a possible prototype
+implementation. Finally, Section~\ref{sec:related} discusses some of the
+related work and Section~\ref{sec:conclusion} concludes.
 
 %Furthermore, our approach gives greater level control which is so
 %important in cloud deployments.
