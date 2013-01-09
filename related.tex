@@ -5,8 +5,17 @@ There are number of alternative SFI implementations with different level
 of maturity, thought none of them being of the production quality.
 \todo{List them as a set of references.}
 
-\todo{Talk about ZeroVM sharing similar set of goals, thought trying to
-achieve them in a different way.}
+The closest in spirit to our proposal is ZeroVM~\cite{zerovm}. The
+project aims to provide a lightweight virtualization platform and same
+as in our case it builds on top of Native Client.  However, there are
+number of significant differences. Rather than an extension of Native
+Client, ZeroVM is a fork reimplementing majority of the existing
+runtime; it also relies on external libraries, such as \mbox{ZeroMQ},
+which has not been security audited. ZeroVM is also not portable only
+supporting Linux x86-64 systems. While being marketed as an embeddable
+solution, it does not provide a well defined embedding interface.
+Finally, ZeroVM does not aim to provide full POSIX, rather its
+deterministic subset.
 
 \todo{Talk about lxc: Linux Containers.}
 
