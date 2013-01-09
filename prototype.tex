@@ -226,24 +226,24 @@ manipulated.
 \subsection{File Access}
 \label{sub:file_access}
 
-The file access is highly application dependent. The embedders may
-choose to provide an access to a host OS filesystem (or its subset). 
-For cloud deployments, they may use an online storage shared by all VM
-instances. On the other hand, for certain type of applications such as
-computation kernels which do not need a persistent storage, it is
-possible to emulate the file access completely in-memory.
+File access is highly application dependent. The embedders may choose to
+provide an access to a host OS filesystem (or its subset).  For cloud
+deployments, they may use an online storage shared by all VM instances.
+On the other hand, for certain type of applications such as computation
+kernels which do not need a persistent storage, it is possible to
+provide in-memory filesystem implementation.
 
-The embedding interface implementation may provide a file service as a
-way to expose host's (or other machine's) filesystem through internal
-descriptors. Embedders may also implement custom descriptor type
-including all operations resembling
+The embedding interface implementation may provide a \emph{file service}
+as a way to expose host's (or other machine's) filesystem through
+internal descriptors. Embedders may also implement custom descriptor
+type including all operations resembling
 FUSE\footnote{\url{http://fuse.sourceforge.net/}} which provides a
 similar functionality in Linux kernel.
 
 The file system access may be also implemented entirely in the untrusted
 code on top of IPC (\ie SRPC) as in traditional microkernel systems.
 This approach is already being used by
-NaCl Mounts~\footnote{\url{http://code.google.com/p/naclports/source/browse/trunk/src/libraries/nacl-mounts/}},
+NaCl Mounts\footnote{\url{http://code.google.com/p/naclports/source/browse/trunk/src/libraries/nacl-mounts/}},
 a pluggable NaCl file system implemented on top of PPAPI, which provides
 a number of back-end implementations including memory, WebFS or Google
 App Engine. The only disadvantage of this approach is slightly lower
@@ -254,5 +254,17 @@ which makes this approach a reasonable alternative.
 \subsection{Network Access}
 \label{sub:network_access}
 
-\todo{Accessing the network interface, in particular to binding to
-sockets and accepting incoming connections.}
+Network access is in many aspect similar to file access. Same as file
+access, it is also highly application dependent. For applications which
+do not need a direct access to the network, we can pass in an already
+bound socket as one of the NaCl application arguments. Otherwise, the
+embedding interface implementation has to provide a \emph{network
+service} which will mediate the access to the host's network interface.
+Same as in the case of the file access, the network access can be also
+implemented either through internal descriptors or using IPC. The
+example of the IPC-based implementation are NaCl
+Sockets\footnote{\url{http://mainroach.blogspot.co.uk/2012/09/nacl-udp-sockets.html}},
+implementation of UDP sockets on top of PPAPI.
+
+\todo{Possibly mention the lack of system calls for asynchronous I/O
+(\ie select or poll).}
