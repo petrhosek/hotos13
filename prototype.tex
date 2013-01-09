@@ -194,7 +194,7 @@ middle has zero references, we need to find a way to reclaim the space.
 Second, we have to make sure that the memory management is safe with
 respect to threads. This is not an issue on systems where altering the
 existing mapping can be done atomically, in particular on Linux and OS X
-(\ie \lstinline`mmap` mmap on top of existing mapping).  However, on
+(\ie \lstinline`mmap` on top of existing mapping).  However, on
 Windows where memory has to be unmapped first and therefore over-mapping
 is not atomic, we have to stop all threads while memory pages are being
 manipulated.
@@ -223,14 +223,36 @@ manipulated.
 %Windows where unmap must occur first and therefore overmapping is not
 %atomic, this is likely to be necessary.
 
-\subsection{File Service}
-\label{sub:file_service}
+\subsection{File Access}
+\label{sub:file_access}
 
-\todo{Talk about file service as a way to expose host's (or other
-machine's) filesystem.}
+The file access is highly application dependent. The embedders may
+choose to provide an access to a host OS filesystem (or its subset). 
+For cloud deployments, they may use an online storage shared by all VM
+instances. On the other hand, for certain type of applications such as
+computation kernels which do not need a persistent storage, it is
+possible to emulate the file access completely in-memory.
 
-\subsection{Network Service}
-\label{sub:network_service}
+The embedding interface implementation may provide a file service as a
+way to expose host's (or other machine's) filesystem through internal
+descriptors. Embedders may also implement custom descriptor type
+including all operations resembling
+FUSE\footnote{\url{http://fuse.sourceforge.net/}} which provides a
+similar functionality in Linux kernel.
+
+The file system access may be also implemented entirely in the untrusted
+code on top of IPC (\ie SRPC) as in traditional microkernel systems.
+This approach is already being used by
+NaCl Mounts~\footnote{\url{http://code.google.com/p/naclports/source/browse/trunk/src/libraries/nacl-mounts/}},
+a pluggable NaCl file system implemented on top of PPAPI, which provides
+a number of back-end implementations including memory, WebFS or Google
+App Engine. The only disadvantage of this approach is slightly lower
+performance associated with the IPC overhead. However, in case of remote
+filesystems, the overhead is going to be dominated by network latency
+which makes this approach a reasonable alternative.
+
+\subsection{Network Access}
+\label{sub:network_access}
 
 \todo{Accessing the network interface, in particular to binding to
 sockets and accepting incoming connections.}
