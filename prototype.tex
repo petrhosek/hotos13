@@ -243,7 +243,7 @@ similar functionality in Linux kernel.
 The file system access may be also implemented entirely in the untrusted
 code on top of IPC (\ie SRPC) as in traditional microkernel systems.
 This approach is already being used by
-NaCl Mounts\footnote{\url{http://code.google.com/p/naclports/source/browse/trunk/src/libraries/nacl-mounts/}},
+NaCl Mounts,\footnote{\url{http://code.google.com/p/naclports/source/browse/trunk/src/libraries/nacl-mounts/}}
 a pluggable NaCl file system implemented on top of PPAPI, which provides
 a number of back-end implementations including memory, WebFS or Google
 App Engine. The only disadvantage of this approach is slightly lower
@@ -263,7 +263,7 @@ service} which will mediate the access to the host's network interface.
 Same as in the case of the file access, the network access can be also
 implemented either through internal descriptors or using IPC. The
 example of the IPC-based implementation are NaCl
-Sockets\footnote{\url{http://mainroach.blogspot.co.uk/2012/09/nacl-udp-sockets.html}},
+Sockets,\footnote{\url{http://mainroach.blogspot.co.uk/2012/09/nacl-udp-sockets.html}}
 implementation of UDP sockets on top of PPAPI.
 
 \todo{Possibly mention the lack of system calls for asynchronous I/O
