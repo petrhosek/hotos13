@@ -8,21 +8,21 @@
 %In recent years, virtualization has become crucialy important for \ldots
 %multi-tenancy, cloud computing.
 
-Virtualization, in its many forms, seems to have become the universal
-solution to a number of problems including security and portability.
-With the rising popularity of cloud computing, virtualization has also
-become crucially important as a way to ensure \emph{multi-tenant
-security}. The XaaS applications can run either on top of virtual
-machine monitor where the customer is provided with the entire operating
-system (\eg Google Compute Engine) or on top of existing language
-runtime (\eg Google App Engine).
+Virtualization, in its many forms, has become the universal solution to
+a number of problems including security and portability.  With the
+rising popularity of cloud computing, virtualization has also become
+crucially important as a way to ensure \emph{multi-tenant security}. The
+XaaS applications can run either on top of virtual machine monitors,
+where the customer is provided with the entire operating system (\eg
+Google Compute Engine) or on top of existing language runtime (\eg
+Google App Engine).
 
 While the operating system-level virtualization is desirable in cases
-when we require a control over the entire execution stack, it can be
+when we require control over the entire execution stack, it can be
 simply too cumbersome when we need to execute only a single application.
 A typical OS installation may require storage space in the order of GB
 plus additional CPU and memory overhead for running the kernel and
-system services. Furthermore, the guest OS may require a frequent
+system services. Furthermore, the guest OS may require frequent
 maintenance (\eg installing updates, managing the configuration).
 Language runtimes on the other hand, while being more lightweight and
 easier to use, typically only target a single high-level language. 
@@ -65,17 +65,17 @@ runtimes (\eg JVM).
 %custom sandboxed runtimes.
 
 Such an execution environment could form the basis for a new kind of
-POSIX compliant PaaS native platform, which will allow for execution of
-high-performance applications. Such a platform will be more efficient
-than traditional virtualization and some language based sandboxes while
-more flexible than Linux-based systems, akin to virtual machines.
-Furthermore, native code support will enable the use of existing C/C++
-libraries and legacy code as well as extended instruction sets (\eg SSE
-or AVX) for high-performance applications. An example of such a service
-is Google Exacycle\footnote{See
+POSIX compliant PaaS native platform which would allow for execution of
+high-performance applications. Such a platform would be more efficient
+than traditional virtualization platforms and some language based
+sandboxes while being more flexible than Linux-based systems, and would
+be akin to virtual machines.  Furthermore, native code support enables
+the use of existing C/C++ libraries and legacy code as well as extended
+instruction sets (\eg SSE or AVX) for high-performance applications. An
+example of such a service is Google Exacycle\footnote{See
 \url{http://research.google.com/university/exacycle_program.html} and
 \url{http://googleresearch.blogspot.com/2011/04/1-billion-core-hours-of-computational.html}.},
-which provides a PaaS platform for large-scale, embarrasingly parallel
+which provides a PaaS platform for large-scale, embarrassingly parallel
 batch computations.
 
 %Furthermore, native code support together with full POSIX interface
@@ -106,11 +106,12 @@ batch computations.
 %not just novelty, but TCB minimization
 
 The rest of this paper is organized as follows.
-Section~\ref{sec:motivation} motivates our proposed solution while
-Section~\ref{sec:overview} gives an overview of the technical approach.
-Then, Section~\ref{sec:prototype} presents a possible prototype
-implementation. Finally, Section~\ref{sec:related} discusses some of the
-related work and Section~\ref{sec:conclusion} concludes.
+Section~\ref{sec:motivation} sets out the motivation for our proposed
+solution while Section~\ref{sec:overview} gives an overview of the
+technical approach.  Then, Section~\ref{sec:prototype} presents a
+possible prototype implementation. Finally, Section~\ref{sec:related}
+discusses some of the related work and Section~\ref{sec:conclusion}
+concludes.
 
 %Furthermore, our approach gives greater level control which is so
 %important in cloud deployments.

@@ -92,13 +92,13 @@
 
 Hypervisors these days rely on virtualization hardware to deliver
 reasonable performance overhead. This makes the hypervisor the most
-privileged process effectively replacing the OS~\cite{heiser:hotos11}.
-Needles to say, it makes the hypervisor a critical part of the entire
+privileged process, effectively replacing the OS~\cite{heiser:hotos11}.
+Needless to say, it makes the hypervisor a critical part of the entire
 execution stack.  It does not matter whether the hypervisor is over 1
-MLOC~\cite{barham:sosp03} or just a few kLOC~\cite{steinberg:eurosys10},
+MLOC~\cite{barham:sosp03} or just a few kLOC~\cite{steinberg:eurosys10};
 any vulnerability in the hypervisor implementation may potentially
 subvert the security of all hosted operating systems. This is a serious
-issue in multi-tenant environment where different host operating systems
+issue in multi-tenant environments, where different host operating systems
 may run software from different customers.
 
 We aim for a different approach. Instead of virtualization hardware, we
@@ -111,34 +111,34 @@ boundary. To further increase security, it is possible to employ other
 sandboxing mechanisms such as seccomp-bpf~\cite{seccomp-bpf:linux}.
 
 We believe it is indeed possible to implement a simple and secure
-virtualization environment sharing the approach with microkernel-based
-systems. These systems follow the minimality principle, providing only
-a minimal set of abstractions. Minimizing the trusted TCB size
+virtualization environment similar in spirit with microkernel-based
+systems. These systems follow the minimality principle, providing only a
+minimal set of abstractions. Minimizing the trusted TCB size
 significantly reduces the attack surface and increases the overall
 security of the system. The reduced TCB size also allows for easier
-security audits. Compared to on-the-metal microkernels, we rely on the
+security audits. Unlike on-the-metal microkernels, we rely on the
 existing monolithic kernel (\ie Linux, OS X or Windows) to do the
-``heavy lifting'' which means that the various microkernel-related
+``heavy lifting'', which means that the various microkernel-related
 overheads (\eg context switch) still exists. \todo{Some readers will
-  complain that we're not reducing the TCB size, since this ``heavy
-  lifting'' code is definitely part of the TCB.  The exposition should
-  be clear that we are referring to the additional TCB needed to
-  implement the VM.}  The benefits of our approach are mainly
-structural; since the VM is implemented entirely in the user space, it
-does not require any special privileges. This makes component/module
-replacement significantly easier.
+complain that we're not reducing the TCB size, since this ``heavy
+lifting'' code is definitely part of the TCB.  The exposition should be
+clear that we are referring to the additional TCB needed to implement
+the VM.}  The benefits of our approach are mainly structural; since the
+VM is implemented entirely in the user space, it does not require any
+special privileges. This makes component/module replacement
+significantly easier.
 
-Providing a POSIX compliant environment will allow executing the
-existing native applications with minimal CPU, memory and I/O overhead
+Providing a POSIX compliant environment makes it possible to execute
+native applications with minimal CPU, memory and I/O overhead,
 making it a lightweight alternative to existing hypervisors.  Since the
-VM provides resource abstraction decoupling the application from the
+VM provides resource abstraction, which decouples the application from the
 host OS, it allows the same executable to run on top of three popular
 operating systems. This makes it an excellent alternative to existing
 language runtimes (\eg JVM). By targeting a subset of x86, it does not
 impose any restrictions on the target language.  Furthermore, by
 providing direct access to CPU and memory, it allows developers to
-leverage the underlying hardware including extended instruction sets
-(\eg SSE, AVX).
+leverage the underlying hardware, in particular extended instruction
+sets (\eg SSE, AVX).
 
 %Combined with compiler infrastructure such as LLVM, which already
 %contains support for Native Client implemented as a part of
@@ -146,7 +146,7 @@ leverage the underlying hardware including extended instruction sets
 %secure execution runtime for new programming languages.
 
 We argue that our proposal could readily be implemented using Native
-Client~\cite{yee:ieee-sp09}, a state of the art open-source industrial
+Client~\cite{yee:ieee-sp09}, a state-of-the-art open-source industrial
 strength SFI implementation. \todo{Explain why Native Client is an ideal
 solution in high-level terms, \eg part of Google Chrome used by millions
 of users, periodically security audited.}

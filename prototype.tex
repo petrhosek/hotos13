@@ -29,10 +29,10 @@
 	%Client realized through internal descriptors.
 %\end{itemize}
 
-In this section, we describe a design of embedding interface, in
+In this section, we describe a design for the embedding interface, in
 particular services to allow support for process creation and control,
 file and directory operations.  All services are implemented using SRPC.
-This mechanism only support basic data types (\ie \lstinline`int`,
+This mechanism only supports basic data types (\ie \lstinline`int`,
 \lstinline`float`, \lstinline`char`) in addition to arrays and internal
 descriptors. These are being used (mostly) as capabilities. For
 efficiency, the operations on descriptors are implemented as NaCl system
@@ -62,14 +62,14 @@ calls.
 \label{fig:architecture}
 \end{figure}
 
-The embedding interface runs as a process separate of the service
+The embedding interface runs as a process separate from the service
 runtime instance with each service running in its own thread (or
 process), which improves the robustness and security of the system. When
-started, service runtime is identified by the socket address which is
+started, service runtime is identified by the socket address, which is
 used to establish the \emph{command channel}. This channel is used to
 control the runtime execution, in particular to load the NaCl executable
-and IRT into memory, to establish the reverse channel, to start and stop
-the process execution.  The \emph{reverse channel} is used by the
+and IRT into memory, to establish the reverse channel and to start and
+stop the process execution.  The \emph{reverse channel} is used by the
 service runtime to access the embedding interface. The process holding
 the command channel can be seen as an effective process parent. While it
 is indeed possible to have multiple command channels, there has to be at
@@ -98,32 +98,32 @@ disconnected, the service runtime immediately terminates the execution.
 \label{sub:process_support}
 
 The support for process creation and control is a part of the POSIX.1,
-Core Services standard, being used by a large number of applications.
+Core Services standard and is used by a large number of applications.
 The most important requirement imposed on process support is
 portability. Since the NaCl executable must run on any supported
-platform without recompilation  the process support can only rely on a
+platform without recompilation, the process support can only rely on a
 common denominator of the functionality provided by the supported
 underlying operating systems (\ie Windows, Linux and OS X). The POSIX
 specification defines two interfaces for creating new processes,
 \lstinline`fork` and \lstinline`posix_spawn`. While the former creates a
 copy of an existing process, the latter creates a new process from the
 specified image.  However, different operating systems implement
-different subset of these primitives. Linux only provides
+different subsets of these primitives. Linux only provides
 \lstinline`fork` (or \lstinline`clone` as a non-standard extension).
 Windows \lstinline`CreateProcess` is equivalent to POSIX
 \lstinline`posix_spawn`. Only OS X provides both primitives.
 
 The process support must have a clear semantics, which may be an issue
-with \lstinline`fork` which is supposed to create the exact copy the
-existing process. However, when using a \lstinline`fork` with a
+with \lstinline`fork` which is often assumed to create an exact copy of
+an existing process. However, when using a \lstinline`fork` with a
 multi-threaded program, we might end up in an inconsistent state since
 only the thread invoking \lstinline`fork` is cloned.  This problem is
-magnified in case of the service runtime which shares the process with
-the untrusted code and uses automatic resource management to increase
-the reliability of resource (de)allocation. If we use the
+magnified in the case of the service runtime, which shares the process
+with the untrusted code and uses automatic resource management to
+increase the reliability of resource (de)allocation. If we use the
 \lstinline`fork` system call to create a copy of the existing process,
 the bookkeeping information will become invalid (\eg memory mappings,
-descriptors, locks) leading to potentially inconsistent state.
+descriptors, locks) leading to a potentially inconsistent states.
 %if \lstinline`pthread_atfork` is not used everywhere that it is needed.
 
 %Therefore, following the same philosophy, our main goal when designing
@@ -134,7 +134,7 @@ To implement the process support, the embedding interface must provide a
 \emph{process service} with a set of methods which may be used to spawn
 a new instance of service runtime returning the socket address. Since
 these methods are accessible to applications, we can rely on untrusted
-libraries (\ie IRT) to implement whatever semantics is needed on top
+libraries (\ie IRT) to implement whatever semantics is needed on top of
 these primitives. Once the new service runtime has been created, the
 invoking process can decide whether it will establish the command
 channel and become the parent, or whether it will pass the socket
@@ -194,9 +194,10 @@ middle has zero references, we need to find a way to reclaim the space.
 Second, we have to make sure that the memory management is safe with
 respect to threads. This is not an issue on systems where altering the
 existing mapping can be done atomically, in particular on Linux and OS X
-(\ie mmap on top of existing mapping).  However, on Windows where memory
-has to be unmapped first and therefore over-mapping is not atomic, we
-have to stop all threads while memory pages are being manipulated.
+(\ie \lstinline`mmap` mmap on top of existing mapping).  However, on
+Windows where memory has to be unmapped first and therefore over-mapping
+is not atomic, we have to stop all threads while memory pages are being
+manipulated.
 
 %User-level fork emulation library manages address space.  All memory
 %are backed by shared memory, though initially not necessarily actually

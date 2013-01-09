@@ -1,7 +1,7 @@
 \section{Native Client as a VM}
 \label{sec:overview}
 
-Native Client comprises of a sandbox which supports supports restricted
+Native Client comprises a sandbox which supports a restricted
 subset of x86, x86-64 and ARM ISA defined by a set of constraints, a
 modified compilation tool chain generating code that observes these
 constrains, and a static validator that verifies that the constrains
@@ -27,46 +27,48 @@ even though they use a different hardware mechanism.
 \label{fig:overview}
 \end{figure}
 
-The service runtime could already be seen as a microkernel. The three key
-abstractions that a microkernel should provide according to
-Liedtke~\cite{liedtke:sosp93} are address spaces, threads and
-inter-process communication (IPC). The service runtime manages the
+The service runtime resembles a microkernel. According to
+Liedtke~\cite{liedtke:sosp93}, microkernel should provide three key
+abstractions: address spaces, threads and inter-process communication
+(IPC). The service runtime satisfies this definition. It manages the
 process' address space to ensure that all data accesses are properly
 sandboxed.  Threads are available through a subset of POSIX thread
 interface.  Finally, it implements certain services using Simple RPC
 (SRPC), a simple and basic remote method invocation mechanism, which
-could be used as an IPC mechanism. \todo{Mention that internal
-descriptors could be seen as an efficient IPC mechanism implementation.}
+could be used as an IPC mechanism.  \todo{Mention that internal
+descriptors could be seen as an efficient way to implement IPC on top of
+existing kernel.}
 
 What is missing to allow Native Client being used as a portable VM for
 native applications are standard POSIX interfaces; the existing
 Application Binary Interface (ABI) exposed to the untrusted code
 contains only a subset of POSIX ABI including the POSIX thread interface
-and common POSIX file I/O interfaces. While this allows porting some of
-the existing POSIX based code, it is not enough to enable use of
-existing applications simply by recompiling them using NaCl tool chain.
+and common POSIX file I/O interfaces. While this makes it possible to
+port some of the existing POSIX based code, it is not enough to enable
+the use of existing applications simply by recompiling them using NaCl
+tool chain.
 
 Rather than implementing the missing interfaces as a part of the service
-runtime, unnecessarily increasing the TCB size, we believe that it is
-possible to implement the missing POSIX interfaces using the microkernel
-design by implementing the majority of functionality in terms of
+runtime and thereby unnecessarily increasing the TCB size, we believe
+that it is possible to implement the missing POSIX interfaces using the
+microkernel design by implementing most of the functionality in terms of
 services (or \emph{servers} in microkernel terms).  These services
-should be a part of \emph{embedding interface}, a set of services the
+should be a part of an \emph{embedding interface}, a set of services the
 embedder of Native Client provides to the NaCl runtime. The service
 runtime may then mediate access to (some of) these services. The
-embedders may also omit providing some of these services in situation
+embedders may also choose to  omit some of these services in situations
 when certain interfaces are not available (\eg filesystem or network
-access)
+access).
 
 To abstract away the internal details Native Client provides
 \emph{Integrated Runtime} (IRT), an untrusted library providing a
 stable, backward compatible interface to a NaCl module. IRT ensures that
-once compiled, NaCl module will run forever even with a newer version of
-service runtime. Facilities provided to untrusted code may be
+once compiled, a NaCl module will run forever even with a newer version
+of service runtime. Facilities provided to untrusted code may be
 implemented either as NaCl system calls or as SRPC services. IRT
-abstracts these differences and provides single unified interface.
-Therefore, IRT could be seen as a part of embedding interface. We expect
-embedders to provide their own version of IRT which will use the
+abstracts these differences and provides a single unified interface.
+Therefore, IRT could be seen as a part of the embedding interface. We
+expect embedders to provide their own version of IRT which will use the
 services provided as a part of embedding interface. It is also possible
 to implement certain POSIX interfaces entirely as a part of IRT (\eg
 in-memory filesystem).
