@@ -108,7 +108,8 @@ implementing the VM entirely in the userspace as a regular process
 without any access to privileged CPU features. Even if the security of
 the VM is compromised, the attacker is still limited by the userspace
 boundary. To further increase security, it is possible to employ other
-sandboxing mechanisms such as seccomp-bpf~\cite{seccomp-bpf:linux}.
+sandboxing mechanisms such as seccomp~\cite{seccomp} or
+seccomp-bpf~\cite{seccomp-bpf}.
 
 We believe it is indeed possible to implement a simple and secure
 virtualization environment similar in spirit with microkernel-based

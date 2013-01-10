@@ -25,13 +25,14 @@ plus additional CPU and memory overhead for running the kernel and
 system services. Furthermore, the guest OS may require frequent
 maintenance (\eg installing updates, managing the configuration).
 Language runtimes on the other hand, while being more lightweight and
-easier to use, typically only target a single high-level language. 
+easier to use, typically only target a single high-level language or
+language family. 
 
 In this position paper, we argue for an application virtual machine (VM)
 capable of running existing POSIX-based applications. The main goal of
 our approach is to provide the same security and isolation assurances as
-hardware-based hypervisors (\eg Xen or KVM), but implemented entirely in
-the user space on top of existing monolithic kernel resembling language
+hardware-based hypervisors (\eg Xen), but implemented entirely in the
+user space on top of existing monolithic kernel resembling language
 runtimes (\eg JVM).
 
 \todo{Possibly provide a real-world example to motivate the argument.}
@@ -67,12 +68,13 @@ runtimes (\eg JVM).
 Such an execution environment could form the basis for a new kind of
 POSIX compliant PaaS native platform which would allow for execution of
 high-performance applications. Such a platform would be more efficient
-than traditional virtualization platforms and some language based
-sandboxes while being more flexible than Linux-based systems, and would
-be akin to virtual machines.  Furthermore, native code support enables
-the use of existing C/C++ libraries and legacy code as well as extended
-instruction sets (\eg SSE or AVX) for high-performance applications. An
-example of such a service is Google Exacycle,\footnote{See
+than traditional hardware virtualization platforms and some language
+based sandboxes while being more flexible than Linux-based systems, and
+would be akin to virtual machines.  Furthermore, native code support
+enables the use of existing C/C++ libraries and legacy code as well as
+extended instruction sets (\eg SSE or AVX) for high-performance
+applications. An example of such a service is Google
+Exacycle,\footnote{See
 \url{http://research.google.com/university/exacycle_program.html} and
 \url{http://googleresearch.blogspot.com/2011/04/1-billion-core-hours-of-computational.html}.}
 which provides a PaaS platform for large-scale, embarrassingly parallel
