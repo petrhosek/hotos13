@@ -28,15 +28,15 @@ that provide excellent security, but are either too
 heavyweight~\cite{adl-tabatabai:pldi96,bugnion:tocs97,waldspurger:osdi02,barham:sosp03,ford:fast05}
 or support only a single high-level
 language~\cite{lindholm:java99,richter:clr10}. Dune~\cite{belay:osdi12}
-represents an interesting alternative using virtualization hardware to
-create secure subdomain within a process similarly to Native Client
-which relies on software protection only. The consequence of using
-virtualization hardware is twofold; Dune has slightly better performance
-overhead, but has very limited portability.  The current implementation
-only supports Linux running on 64-bit x86 Intel CPUs. Unlike Native
-Client, which runs entirely in user-space, Dune is implemented as a
-Linux kernel module and runs in a priviledged mode which has a number of
-security implications as discussed in Section~\ref{sec:motivation}.
+takes a different spin using virtualization hardware to create secure
+subdomain within a process similarly to Native Client, which relies on
+software protection only. The consequence of using virtualization
+hardware is twofold; Dune has slightly better performance overhead, but
+has very limited portability.  The current implementation only supports
+Linux running on 64-bit x86 Intel CPUs. Unlike Native Client, which runs
+entirely in user-space, Dune is implemented as a Linux kernel module and
+runs in a priviledged mode which has a number of security implications
+as discussed in Section~\ref{sec:motivation}.
 
 User Mode Linux (UML)~\cite{dike:uml06} enables Linux kernel to be run as
 an user-space application to create multiple virtual systems. The
