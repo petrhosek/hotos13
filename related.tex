@@ -2,8 +2,13 @@
 \label{sec:related}
 
 There are number of alternative SFI implementations with different level
-of maturity, thought none of them being of the production quality.
-\todo{List them as a set of references.}
+of maturity, thought none of them being of a production
+quality~\cite{small:coots97,mccamant:usenix-sec06,ford:usenix-atc08}.
+Similarly, there are also many environments based on a VM architecture
+that provide excellent security, but are either too
+heavyweight~\cite{adl-tabatabai:pldi96,bugnion:tocs97,waldspurger:osdi02,barham:sosp03,ford:fast05}
+or support only a single high-level
+language~\cite{lindholm:java99,richter:clr10}.
 
 The closest in spirit to our proposal is ZeroVM~\cite{zerovm}. The
 project aims to provide a lightweight virtualization platform and same
@@ -38,7 +43,7 @@ sandboxed.
 
 \todo{Talk about lxc: Linux Containers.}
 
-User Mode Linux (UML)~\cite{uml:linux06} enables Linux kernel to be run as
+User Mode Linux (UML)~\cite{dike:uml06} enables Linux kernel to be run as
 an user-space application to create multiple virtual systems. While the
 overall approach is similar to Native Client with each guest process being
 mapped to a single host process and guest kernel being responsible for

@@ -145,15 +145,16 @@ sets (\eg SSE, AVX).
 %PNaCl~\cite{donovan:pnacl10}, it could form a basis for portable and
 %secure execution runtime for new programming languages.
 
-We argue that our proposal could readily be implemented using Native
-Client~\cite{yee:ieee-sp09}, a state-of-the-art open-source industrial
-strength SFI implementation. \todo{Explain why Native Client is an ideal
-solution in high-level terms, \eg part of Google Chrome used by millions
-of users, periodically security audited.}
-
-\todo{Talk about use as an embedded VM to allow use of native code (as
-well as interpreted languages) in applications. Native Client runtime at
-the moment weights \~500kB which makes it perfectly suitable.}
+We argue that our proposal could readily be implemented as an extension
+to Native Client~\cite{yee:ieee-sp09}, an open-source industrial
+strength SFI implementation. Native Client is currently being provided
+as a Google Chrome plugin, which allows executing native code in
+webpages. Unlike number of existing VMM implementations as well as
+language runtimes, Native Client is being periodically security audited.
+The correctness of certain part of the sandbox has been also formally
+proved. The minimal implementation and small executable size
+($\approx\SI{500}{\kilo\byte}$) makes it perfectly suitable for
+embedding in other applications.
 
 %The features we want to provide are flexibility and maintainability.
 %\ldots embedding interface \ldots allows to use \ldots in various setups
