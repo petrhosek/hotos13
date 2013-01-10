@@ -122,8 +122,8 @@ existing monolithic kernel (\ie Linux, OS X or Windows) to do the
 ``heavy lifting'', which means that the various microkernel-related
 overheads (\eg context switch) still exists. The benefits of our
 approach are mainly structural; since the VM is implemented entirely in
-the user space, it does not require any special privileges. This makes
-component/module replacement significantly easier.
+the user space, it does not require any special privileges. This
+simplifies the component update and replacement.
 
 Providing a POSIX compliant environment makes it possible to execute
 native applications with minimal CPU, memory and I/O overhead,
@@ -150,7 +150,7 @@ webpages. Unlike number of existing VMM implementations as well as
 language runtimes, Native Client is being periodically security audited.
 The correctness of certain part of the sandbox has been also formally
 proved. The minimal implementation and small executable size
-($\approx\SI{500}{\kilo\byte}$) makes it perfectly suitable for
+($\approx500\mathrm{kB}$) makes it perfectly suitable for
 embedding in other applications.
 
 %The features we want to provide are flexibility and maintainability.
