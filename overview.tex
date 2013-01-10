@@ -20,37 +20,49 @@ even though they use a different hardware mechanism.
 %modeled after POSIX ABI and includes subset of the POSIX thread
 %interface as well as common POSIX file I/O interfaces.
 
-\begin{figure}
-\centering
-%\includegraphics{architecture}
-\caption{Overview of core NaCl components}
-\label{fig:overview}
-\end{figure}
+%\begin{figure}
+%\centering
+%%\includegraphics{architecture}
+%\caption{Overview of core NaCl components}
+%\label{fig:overview}
+%\end{figure}
 
-The service runtime resembles a microkernel. According to
-Liedtke~\cite{liedtke:sosp93}, microkernel should provide three key
-abstractions: address spaces, threads and inter-process communication
-(IPC). The service runtime satisfies this definition. It manages the
-process' address space to ensure that all data accesses are properly
-sandboxed.  Threads are available through a subset of POSIX thread
-interface.  Finally, it implements certain services using Simple RPC
-(SRPC), a simple and basic remote method invocation mechanism, which
-could be used as an IPC mechanism.
+The service runtime architecture resembles a microkernel providing
+the three key abstractions as defined by Liedtke~\cite{liedtke:sosp93}:
+\begin{inparaenum}[(i)]
+\item address spaces, used to ensure that all data accesses are properly
+  sandboxed;
+\item threads as a mechanism for allocating CPU, available through a subset
+  of POSIX thread interface; and
+\item IMC, a cross-platform socket implementation, and SRPC, a simple
+  remote method invocation implemented on top of IMC, both of
+  which can be used as an IPC mechanism.
+\end{inparaenum}
 
-\draft{The service runtime implementation  should be seen as an attempt
-at a minimalist TCB in user space, but not necessarily the smallest
-possible one. The service runtime provides a ``wide'' range of system
-calls and does not convert all kernel invocations into messages like
-Mach 3.x and other pure microkernels. On the other hand, it uses
-messaging in cases when the communication overhead is negligible
-compared to the operation itself.  The reason is fully pragmatic; since
-it is extremely difficult to implement secure and fast cross-platform
-IPC entirely in the user space, the service runtime instead exposes
-descriptors, which are really used as capabilities, together with a set
-operations implemented as system calls. When seen as an efficient way to
-implement IPC on top of existing kernel, then the service runtime could
-considered a microkernel; otherwise it should be really treated as a
-hybrid architecture.}
+The service runtime implementation  should be seen as an attempt at a
+minimalist TCB in user space, but not necessarily the smallest possible
+one. The service runtime provides a ``wide'' range of system calls and
+does not convert all kernel invocations into messages like Mach 3.x and
+other pure microkernels; it only uses messaging in cases when the
+communication overhead is negligible compared to the operation itself.
+The reason is fully pragmatic. Since it is difficult to implement secure
+and fast cross-platform IPC entirely in the user space, the service
+runtime instead exposes descriptors, which are really used as
+capabilities, together with a set operations implemented as system
+calls. When seen as an efficient way to implement IPC on top of existing
+monolithic kernel, the service runtime could be considered as a
+microkernel; otherwise it should be really treated as a hybrid
+architecture.
+
+%The service runtime resembles a microkernel. According to
+%Liedtke~\cite{liedtke:sosp93}, microkernel should provide three key
+%abstractions: address spaces, threads and inter-process communication
+%(IPC). The service runtime satisfies this definition. It manages the
+%process' address space to ensure that all data accesses are properly
+%sandboxed.  Threads are available through a subset of POSIX thread
+%interface.  Finally, it implements certain services using Simple RPC
+%(SRPC), a simple and basic remote method invocation mechanism, which
+%could be used as an IPC mechanism.
 
 What is missing to allow Native Client being used as a portable VM for
 native applications is the standard POSIX API; the existing Application
@@ -63,7 +75,7 @@ existing applications simply by recompiling them using NaCl tool chain.
 Rather than implementing the missing interfaces as a part of the service
 runtime and thereby unnecessarily increasing the TCB size, we believe
 that it is possible to implement the missing POSIX interfaces using the
-microkernel design by implementing most of the functionality in terms of
+microkernel approach by implementing most of the functionality in terms of
 services (or \emph{servers} in microkernel terms).  These services
 should be a part of an \emph{embedding interface}, a set of services the
 embedder of Native Client provides to the NaCl runtime. The service
@@ -72,14 +84,14 @@ embedders may also choose to  omit some of these services in situations
 when certain interfaces are not available (\eg filesystem or network
 access).
 
-\draft{The goal of the embedding interface is to provide API sets needed
-by the class of applications that embedder want to run. The POSIX API
-can be seen as a basic interface necessary to allow porting of the
-existing native code. However, additional API such as OpenGL might be
-needed on a per-embedding or per-application basis. The goal of the
-embedding interface is to allow easy implementation of these additional
-interfaces rather then trying to provide a fixed set. This is where
-microkernel approach is particularly suitable.}
+The goal of the embedding interface is to provide API sets needed by the
+class of applications that embedder want to run. The POSIX API can be
+seen as a basic interface necessary to allow porting of the existing
+native code. However, additional API such as OpenGL might be needed on a
+per-embedding or per-application basis. The goal of the embedding
+interface is to allow easy implementation of these additional interfaces
+rather then trying to provide a fixed set. This is where microkernel
+approach is particularly suitable.
 
 To abstract away the internal details Native Client provides
 \emph{Integrated Runtime} (IRT), an untrusted library providing a
@@ -88,11 +100,11 @@ once compiled, a NaCl module will run forever even with a newer version
 of service runtime. Facilities provided to untrusted code may be
 implemented either as NaCl system calls or as SRPC services. IRT
 abstracts these differences and provides a single unified interface.
-Therefore, IRT could be seen as a part of the embedding interface. We
-expect embedders to provide their own version of IRT which will use the
-services provided as a part of embedding interface. It is also possible
-to implement certain POSIX interfaces entirely as a part of IRT (\eg
-in-memory filesystem).
+Therefore, IRT could be really seen as a part of the embedding
+interface. We expect embedders to provide their own version of IRT which
+will use the services provided as a part of their embedding interface
+implementation. It is also possible to implement certain POSIX
+interfaces entirely as a part of IRT (\eg in-memory filesystem).
 
 %The features we want to provide are flexibility and maintainability.
 %\ldots embedding interface \ldots allows to use \ldots in various setups
