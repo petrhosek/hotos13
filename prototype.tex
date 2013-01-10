@@ -176,6 +176,13 @@ emulating chroot-like behavior entirely in the untrusted code.
 \subsection{Backing Store}
 \label{sub:backing_store}
 
+<<<<<<< HEAD
+=======
+\todo{We may decide to implement this with regular files, for example,
+which can be \lstinline`MAP_SHARED` by the untrusted library. Talk about
+DSM~\cite{keleher:phd95}}
+
+>>>>>>> 4b81dd8650f20fca421a7db160c651c81efd8b06
 When the process spawns a new subprocess using the \lstinline`fork`
 operation, the child's address space should be an exact copy of its
 parent's.  The inefficient way to implement such behavior would be to
