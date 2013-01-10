@@ -21,13 +21,13 @@ While the operating system-level virtualization is desirable in cases
 when we require control over the entire execution stack, it can be
 simply too cumbersome when we need to execute only a single
 application.  A typical OS installation may require storage space in
-the order of GB plus additional CPU and memory overhead for running
-the kernel and system services. Furthermore, the guest OS may require
-frequent maintenance (\eg installing updates, managing the
+the order of gigabytes plus additional CPU and memory overhead for
+running the kernel and system services. Furthermore, the guest OS may
+require frequent maintenance (\eg installing updates, managing the
 configuration).  Language runtimes on the other hand, while being more
-lightweight and easier to use, typically only target a single
-high-level language or language family and similarly require continual
-security maintenance \cite{java0day2013}.
+lightweight and easier to use, typically only target a single high-level
+language or language family and similarly require continual security
+maintenance \cite{java0day2013}.
 
 In this position paper, we argue for an application virtual machine (VM)
 capable of running existing POSIX-based applications. The main goal of

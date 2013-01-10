@@ -47,12 +47,11 @@ other pure microkernels; it only uses messaging in cases when the
 communication overhead is negligible compared to the operation itself.
 The reason is fully pragmatic. Since it is difficult to implement secure
 and fast cross-platform IPC entirely in the user space, the service
-runtime instead exposes descriptors, which are really used as
-capabilities, together with a set operations implemented as system
+runtime instead exposes descriptors, which are mostly used as
+capabilities, together with a set of operations implemented as system
 calls. When seen as an efficient way to implement IPC on top of existing
 monolithic kernel, the service runtime could be considered as a
-microkernel; otherwise it should be really treated as a hybrid
-architecture.
+microkernel; otherwise it should be treated as a hybrid architecture.
 
 %The service runtime resembles a microkernel. According to
 %Liedtke~\cite{liedtke:sosp93}, microkernel should provide three key

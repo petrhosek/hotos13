@@ -200,7 +200,7 @@ When a new subprocess is created, it receives the memory object
 descriptors together with the location in the parent's process address
 space. Both parent and child processes change page protection of all
 memory pages to read-only to emulate copy-on-write, which is a
-responsibility of the IRT. On fault, the affected page will be copied
+responsibility of the IRT. On fault, the affected page is copied
 to a new shared memory which belongs to the subprocess, the reference
 count to the old page within the original shared memory object is
 decremented, the new shared memory pages are mapped in place of the

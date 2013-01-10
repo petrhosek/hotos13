@@ -101,14 +101,14 @@ subvert the security of all hosted operating systems. This is a serious
 issue in multi-tenant environments, where different host operating systems
 may run software from different customers.
 
-We aim for a different approach. Instead of virtualization hardware, we
-plan to employ software fault isolation~\cite{wahbe:sosp93} to direct
-all system interactions through controlled interfaces. This allows
-implementing the VM entirely in the userspace as a regular process
-without any access to privileged CPU features. Even if the security of
-the VM is compromised, the attacker is still limited by the userspace
-boundary. To further increase security, it is possible to employ other
-sandboxing mechanisms such as seccomp~\cite{seccomp} or
+We aim for a different approach. Instead of using virtualization
+hardware, we plan to employ software fault isolation~\cite{wahbe:sosp93}
+to direct all system interactions through controlled interfaces. This
+allows implementing the VM entirely in the userspace as a regular
+process without any access to privileged CPU features. Even if the
+security of the VM is compromised, the attacker is still limited by the
+userspace boundary. To further increase security, it is possible to
+employ other sandboxing mechanisms such as seccomp~\cite{seccomp} or
 seccomp-bpf~\cite{seccomp-bpf}.
 
 We believe it is indeed possible to implement a simple and secure
@@ -143,15 +143,15 @@ sets (\eg SSE, AVX).
 %secure execution runtime for new programming languages.
 
 We argue that our proposal could readily be implemented as an extension
-to Native Client~\cite{yee:ieee-sp09}, an open-source industrial
+to Native Client~\cite{yee:ieee-sp09} (NaCl), an open-source industrial
 strength SFI implementation. Native Client is currently being provided
 as a Google Chrome plugin, which allows executing native code in
 webpages. Unlike number of existing VMM implementations as well as
 language runtimes, Native Client is being periodically security audited.
 The correctness of certain part of the sandbox has been also formally
 proved. The minimal implementation and small executable size
-($\approx500\mathrm{kB}$) makes it perfectly suitable for
-embedding in other applications.
+($\approx500\mathrm{kB}$) makes it perfectly suitable for embedding in
+other applications.
 
 %The features we want to provide are flexibility and maintainability.
 %\ldots embedding interface \ldots allows to use \ldots in various setups
