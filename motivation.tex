@@ -120,14 +120,10 @@ security of the system. The reduced TCB size also allows for easier
 security audits. Unlike on-the-metal microkernels, we rely on the
 existing monolithic kernel (\ie Linux, OS X or Windows) to do the
 ``heavy lifting'', which means that the various microkernel-related
-overheads (\eg context switch) still exists. \todo{Some readers will
-complain that we're not reducing the TCB size, since this ``heavy
-lifting'' code is definitely part of the TCB.  The exposition should be
-clear that we are referring to the additional TCB needed to implement
-the VM.}  The benefits of our approach are mainly structural; since the
-VM is implemented entirely in the user space, it does not require any
-special privileges. This makes component/module replacement
-significantly easier.
+overheads (\eg context switch) still exists. The benefits of our
+approach are mainly structural; since the VM is implemented entirely in
+the user space, it does not require any special privileges. This makes
+component/module replacement significantly easier.
 
 Providing a POSIX compliant environment makes it possible to execute
 native applications with minimal CPU, memory and I/O overhead,
