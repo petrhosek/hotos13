@@ -45,14 +45,22 @@
 %Pepper). but a fuller subset of POSIX will improve things, and the
 %non-POSIX APIs are application/embedder/domain specific.
 
-In this section, we describe a design for the embedding interface, in
-particular services to allow support for process creation and control,
-file and directory operations.  All services are implemented using SRPC.
-This mechanism only supports basic data types (\ie \lstinline`int`,
-\lstinline`float`, \lstinline`char`) in addition to arrays and internal
-descriptors. These are being used (mostly) as capabilities. For
-efficiency, the operations on descriptors are implemented as NaCl system
-calls.
+In this section, we describe a proposed design for the embedding
+interface, in particular the services necessary to support process
+creation and control, file and network access. While these form the core
+POSIX API necessary to support the existing applications, as already
+described in previous section, embedders may provide additional
+interfaces if needed. Example of such additional interface is
+PPAPI~\cite{ppapi}, a cross-platform API for plugins for web browsers;
+the untrusted subset of PPAPI is available to NaCl applications that are
+being run in Google Chrome.
+
+%All services provided as a part of embedding interface are implemented
+%using SRPC. This mechanism only supports basic data types (\ie
+%\lstinline`int`, \lstinline`float`, \lstinline`char`) in addition to
+%arrays and internal descriptors. These are being used (mostly) as
+%capabilities. For efficiency, the operations on descriptors are
+%implemented as NaCl system calls.
 
 %While the operations on descriptors are implemented as NaCl system calls
 %for efficiency, the majority of interfaces provided to untrusted should
@@ -273,5 +281,5 @@ example of the IPC-based implementation are NaCl
 Sockets,\footnote{See \url{http://mainroach.blogspot.co.uk/2012/09/nacl-udp-sockets.html}}
 implementation of UDP sockets on top of PPAPI.
 
-\todo{Possibly mention the lack of system calls for asynchronous I/O
-(\ie select or poll).}
+%\todo{Possibly mention the lack of system calls for asynchronous I/O
+%(\ie select or poll).}
