@@ -30,12 +30,12 @@ language family.
 
 In this position paper, we argue for an application virtual machine (VM)
 capable of running existing POSIX-based applications. The main goal of
-our approach is to provide the same security and isolation assurances as
+our approach is to offer the same security and isolation assurances as
 hardware-based hypervisors (\eg Xen), but implemented entirely in the
 user space on top of existing monolithic kernel resembling language
-runtimes (\eg JVM).
-
-\todo{Possibly provide a real-world example to motivate the argument.}
+runtimes (\eg JVM). Furthermore, by providing the clean embedding
+interface, such a VM could be integrated into both new and existing
+systems to allow safe native code execution.
 
 %With the rising popularity of cloud computing, virtualization has become
 %crucially important as a way to provide \emph{multi-tenancy}. While the
