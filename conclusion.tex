@@ -1,8 +1,8 @@
 \section{Conclusion}
 \label{sec:conclusion}
 
-In this paper, we have proposed a new type of application virtual
-machine combining SFI with microkernel-style service oriented archicture
+In this position paper, we have proposed a new type of application VM
+combining SFI with microkernel-style service oriented archicture
 providing the POSIX interfaces. The implementation based on Native
 Client would allow executing native POSIX compliant code at near native
 speed while providing the same security and isolation guarantees as
@@ -10,5 +10,7 @@ existing hypervisors. This will allow the use of wide range of existing
 legacy software without the overhead of running (and managing) the
 entire operating system. Furthermore, our approach gives greater control
 than traditional language runtimes which can be useful in a number of
-scenarios, in particular as a new type of PaaS native platform.
-\todo{Talk about embedding in applications.}
+scenarios, in particular as a new type of PaaS native platform. Finally,
+by providing a clean embedding interface, the VM could be easily
+integrated into other applications providing the native code execution
+capability.

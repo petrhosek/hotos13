@@ -1,68 +1,74 @@
 \section{Related Work}
 \label{sec:related}
 
-There are number of alternative SFI implementations with different level
-of maturity, thought none of them being of a production
-quality~\cite{small:coots97,mccamant:usenix-sec06,ford:usenix-atc08}.
+The closest in spirit to our proposal is ZeroVM~\cite{zerovm}. The
+project aims to provide a lightweight virtualization platform and same
+as in our case it builds on top of Native Client.  However, there are
+number of significant differences. ZeroVM does not aim to provide full
+POSIX, rather its deterministic subset. In terms of the implementation,
+ZeroVM is not an extension rather a fork of Native Client, which replace
+or reimplements a large part of the existing runtime. One of the
+consequences is the lack of portability as ZeroVM only supports Linux
+x86-64 systems at the moment.
+
+There are number of alternative SFI implementations, all providing
+similar set of features, thought none of them being of the production
+quality~\cite{small:coots97,mccamant:usenix-sec06}.  The most relevant
+in this context is Vx32~\cite{ford:usenix-atc08}, an SFI implementation,
+which shares number of features with Native Client. The goal however is
+not to provide entire runtime environment rather than a library which
+could be used to sandbox (a part of) the process and confine the guest
+code to a custom system call API. 
+
+%This mechanism has been used to
+%implement number of applications~\cite{ford:fast05}.
+
 Similarly, there are also many environments based on a VM architecture
 that provide excellent security, but are either too
 heavyweight~\cite{adl-tabatabai:pldi96,bugnion:tocs97,waldspurger:osdi02,barham:sosp03,ford:fast05}
 or support only a single high-level
-language~\cite{lindholm:java99,richter:clr10}.
-
-The closest in spirit to our proposal is ZeroVM~\cite{zerovm}. The
-project aims to provide a lightweight virtualization platform and same
-as in our case it builds on top of Native Client.  However, there are
-number of significant differences. Rather than an extension of Native
-Client, ZeroVM is a fork reimplementing majority of the existing
-runtime; it also relies on external libraries, such as \mbox{ZeroMQ},
-which has not been security audited. ZeroVM is also not portable only
-supporting Linux x86-64 systems. While being marketed as an embeddable
-solution, it does not provide a well defined embedding interface.
-Finally, ZeroVM does not aim to provide full POSIX, rather its
-deterministic subset.
-
-Vx32~\cite{ford:usenix-atc08} is an alternative SFI implementation,
-which shares number of features with Native Client. The goal however is
-not to provide entire runtime environment rather than a library which
-could be used to sandbox (part of) the process.
-
-Dune~\cite{belay:osdi12} uses virtualization hardware, in particular
-Intel VT-x, to create secure subdomain within a process similarly to
-Native Client which relies entirely on software protection. Both systems
-run on top of existing kernel and could be considered type-2
-hypervisors. The consequence of using virtualization hardware is
-twofold; Dune has slightly better performance overhead, but has very
-limited portability. The current implementation only supports Linux
-running on 64-bit x86 Intel CPUs. Unlike Native Client, which runs
-entirely in user-space, Dune is implemented as a Linux kernel module and
-runs in a priviledged mode which has a number of security implications
-(see Section~\ref{sec:motivation}). Dune uses standard \lstinline`fork`
-semantics where newly spawned processes are \emph{not} implicitly
-sandboxed.
-
-\todo{Talk about lxc: Linux Containers~\cite{lxc}.}
+language~\cite{lindholm:java99,richter:clr10}. Dune~\cite{belay:osdi12}
+represents an interesting alternative using virtualization hardware to
+create secure subdomain within a process similarly to Native Client
+which relies on software protection only. The consequence of using
+virtualization hardware is twofold; Dune has slightly better performance
+overhead, but has very limited portability.  The current implementation
+only supports Linux running on 64-bit x86 Intel CPUs. Unlike Native
+Client, which runs entirely in user-space, Dune is implemented as a
+Linux kernel module and runs in a priviledged mode which has a number of
+security implications as discussed in Section~\ref{sec:motivation}.
 
 User Mode Linux (UML)~\cite{dike:uml06} enables Linux kernel to be run as
-an user-space application to create multiple virtual systems. While the
+an user-space application to create multiple virtual systems. The
 overall approach is similar to Native Client with each guest process being
 mapped to a single host process and guest kernel being responsible for
-providing resource abstractions, there are significant differences.
-First of all, UML is restricted to Linux with hardware support limited
-to 64-bit Intel x86 CPUs, the support for other hardware platforms is
-unclear. Second, the performance overhead is larger than in case of
-Native Client. Last but not least, the size of Linux kernel code-base is
-several order of magnitudes larger than that of Native Client which
-makes any security audits merely impossible and also significantly
-increases attack space. Moreover, UML does not employ any additional
-security mechanisms and relies entirely on user-space isolation. The
-advantage of UML over Native Client is full compatibility with existing
-applications.
+providing resource abstractions. However, Linux TCB size is several
+orders of magnitudes larger than that of Native Client which makes any
+security audits merely impossible. UML is also naturally restricted to
+Linux only. A more lightweight alternative is LXC~\cite{lxc} which aims
+to extend chroot capabilities by implementing complete virtual systems,
+which includes resource management and isolation mechanisms.
+Unfortunatelly, LXC does yet not provide the same security of other
+virtualization technologies, including Native Client, as there is no
+inherent protection against exploits that allow a user to become the
+root\footnote{See \url{http://wiki.gentoo.org/wiki/LXC}}. Furthermore,
+this solution is, same as UML, restricted to Linux only. 
 
-\cite{heiser:hotos11}
-\cite{tanenbaum:osdi08}
-\cite{engler:sosp95}
-\cite{yee:ieee-sp09}
-\cite{sehr:usenix-sec10}
-\cite{ansel:pldi11}
-\cite{donovan:pnacl10}
+%First of all, UML is restricted to Linux with hardware support limited
+%to 64-bit Intel x86 CPUs, the support for other hardware platforms is
+%unclear. Second, the performance overhead is larger than in case of
+%Native Client. Last but not least, the size of Linux kernel code-base is
+%several order of magnitudes larger than that of Native Client which
+%makes any security audits merely impossible and also significantly
+%increases attack space. Moreover, UML does not employ any additional
+%security mechanisms and relies entirely on user-space isolation. The
+%advantage of UML over Native Client is full compatibility with existing
+%applications.
+
+%\cite{heiser:hotos11}
+%\cite{tanenbaum:osdi08}
+%\cite{engler:sosp95}
+%\cite{yee:ieee-sp09}
+%\cite{sehr:usenix-sec10}
+%\cite{ansel:pldi11}
+%\cite{donovan:pnacl10}

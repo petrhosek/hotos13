@@ -9,12 +9,12 @@ have been followed.  The sandbox is implemented as the part of the
 \emph{service runtime}, a native executable which provides resource
 abstractions to isolate NaCl applications from host resources and
 underlying operating system interfaces. Even though it shares a process
-with the contained NaCl module, the service runtime prevents untrusted
-code from inappropriate accesses by sandboxing data accesses using
-various hardware mechanisms. The service runtime functionality is
-accessible through system calls which resemble standard kernel system
-calls by performing a ``context switch'' from untrusted to trusted code,
-even though they use a different hardware mechanism.
+with the contained NaCl application, the service runtime prevents
+untrusted code from inappropriate accesses using various hardware
+mechanisms~\cite{yee:ieee-sp09,sehr:usenix-sec10}. The service runtime
+functionality is accessible through system calls which resemble standard
+kernel system calls by performing a ``context switch'' from untrusted to
+trusted code.
 
 %The Application Binary Interface (ABI) exposed to the untrusted code is
 %modeled after POSIX ABI and includes subset of the POSIX thread

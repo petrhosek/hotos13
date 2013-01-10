@@ -71,12 +71,12 @@ calls.
 %Different implementations of embedding interface, one for browser, one
 %for server, one for mobile phone, etc.
 
-\begin{figure}
-\centering
-%\includegraphics{architecture}
-\caption{Embedding interface architecture}
-\label{fig:architecture}
-\end{figure}
+%\begin{figure}
+%\centering
+%%\includegraphics{architecture}
+%\caption{Embedding interface architecture}
+%\label{fig:architecture}
+%\end{figure}
 
 The embedding interface runs as a process separate from the service
 runtime instance with each service running in its own thread (or
@@ -113,24 +113,23 @@ disconnected, the service runtime immediately terminates the execution.
 \subsection{Process Support}
 \label{sub:process_support}
 
-The support for process creation and control is a part of the POSIX.1,
-Core Services standard and is used by a large number of applications.
-The most important requirement imposed on process support is
-portability. Since the NaCl executable must run on any supported
-platform without recompilation, the process support can only rely on a
-common denominator of the functionality provided by the supported
-underlying operating systems (\ie Windows, Linux and OS X). The POSIX
-specification defines two interfaces for creating new processes,
-\lstinline`fork` and \lstinline`posix_spawn`. While the former creates a
-copy of an existing process, the latter creates a new process from the
-specified image.  However, different operating systems implement
-different subsets of these primitives. Linux only provides
+The support for process creation and control is a part of the POSIX
+standard and is used by a large number of applications.  The most
+important requirement imposed on process support is portability. Since
+the NaCl executable must run on any supported platform, the process
+support can only rely on a common denominator of the functionality
+provided by the host operating systems (\ie Windows, Linux and OS X).
+The POSIX specification defines two interfaces for creating new
+processes, \lstinline`fork` and \lstinline`posix_spawn`.  While the
+former creates a copy of an existing process, the latter creates a new
+process from the specified image.  However, different operating systems
+implement different subsets of these primitives. Linux only provides
 \lstinline`fork` (or \lstinline`clone` as a non-standard extension).
 Windows \lstinline`CreateProcess` is equivalent to POSIX
 \lstinline`posix_spawn`. Only OS X provides both primitives.
 
 The process support must have a clear semantics, which may be an issue
-with \lstinline`fork` which is often assumed to create an exact copy of
+with \lstinline`fork` which is assumed to create an exact copy of
 an existing process. However, when using a \lstinline`fork` with a
 multi-threaded program, we might end up in an inconsistent state since
 only the thread invoking \lstinline`fork` is cloned.  This problem is
