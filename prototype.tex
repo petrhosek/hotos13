@@ -1,4 +1,4 @@
-\section{Prototype of the Embedding Interface}
+\section{The Embedding Interface}
 \label{sec:prototype}
 
 %Although Native Client already provides a subset of POSIX interface,
@@ -28,6 +28,22 @@
 %\item IPC mechanism necessary to invoke remote services, in Native
 	%Client realized through internal descriptors.
 %\end{itemize}
+
+%POSIX doesn't include OpenGL. or db access. so POSIX is sort of the
+%basic level for porting code easily, but additional APIs such as Pepper
+%(though I would prefer to view it as OpenGL implemented using Pepper)
+%are needed on a per-embedding or per-application basis.
+
+%if an embedder wants to expose oracle or a mysql interface to untrusted
+%code, for example, it should be able to. (the embedder needs to ensure
+%the interfaces do proper validation, policy enforcement, etc, of
+%course.)
+
+%I think the pt of view is what are the API sets needed by the class of
+%applications that embedders want to run. the subset of POSIX that we
+%have now is pretty good (so far) for chrome, plus they need OpenGL (or
+%Pepper). but a fuller subset of POSIX will improve things, and the
+%non-POSIX APIs are application/embedder/domain specific.
 
 In this section, we describe a design for the embedding interface, in
 particular services to allow support for process creation and control,

@@ -17,21 +17,26 @@ solution, it does not provide a well defined embedding interface.
 Finally, ZeroVM does not aim to provide full POSIX, rather its
 deterministic subset.
 
-\todo{Talk about lxc: Linux Containers.}
+Vx32~\cite{ford:usenix-atc08} is an alternative SFI implementation,
+which shares number of features with Native Client. The goal however is
+not to provide entire runtime environment rather than a library which
+could be used to sandbox (part of) the process.
 
 Dune~\cite{belay:osdi12} uses virtualization hardware, in particular
 Intel VT-x, to create secure subdomain within a process similarly to
-Native Client which relies entirely on software protection. Both
-systems run on top of existing kernel and could be considered type-2
+Native Client which relies entirely on software protection. Both systems
+run on top of existing kernel and could be considered type-2
 hypervisors. The consequence of using virtualization hardware is
 twofold; Dune has slightly better performance overhead, but has very
-limited portability; the current implementation only supports Linux
+limited portability. The current implementation only supports Linux
 running on 64-bit x86 Intel CPUs. Unlike Native Client, which runs
 entirely in user-space, Dune is implemented as a Linux kernel module and
-runs in a priviledged mode. Therefore, its use has larger security and
-administration implications (see Section~\ref{sec:overview}). Dune uses
-standard \lstinline`fork` semantics where newly spawned processes are
-\emph{not} implicitly sandboxed.
+runs in a priviledged mode which has a number of security implications
+(see Section~\ref{sec:motivation}). Dune uses standard \lstinline`fork`
+semantics where newly spawned processes are \emph{not} implicitly
+sandboxed.
+
+\todo{Talk about lxc: Linux Containers.}
 
 User Mode Linux (UML)~\cite{uml:linux06} enables Linux kernel to be run as
 an user-space application to create multiple virtual systems. While the
