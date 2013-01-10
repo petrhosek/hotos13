@@ -1,8 +1,8 @@
 # Secure Embeddable Virtual Machine for Native Code
 
-## Petr Hosek and Bennet Yee
+**Petr Hosek and Bennet Yee**
 
-We propose a new type of _embedded virtual machine_ capable of running
+We propose a new type of *embedded virtual machine* capable of running
 native applications. The aim is to combine aspects of a microkernel
 design with the existing software fault isolation technology to provide
 a POSIX compliant execution environment. Such an execution environment
