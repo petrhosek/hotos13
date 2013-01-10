@@ -176,44 +176,37 @@ emulating chroot-like behavior entirely in the untrusted code.
 \subsection{Backing Store}
 \label{sub:backing_store}
 
-\todo{We may decide to implement this with regular files, for example,
-which can be \lstinline`MAP_SHARED` by the untrusted library.}
-
 When the process spawns a new subprocess using the \lstinline`fork`
 operation, the child's address space should be an exact copy of its
 parent's.  The inefficient way to implement such behavior would be to
-copy the content of parent's address space. The efficient way, typically
-used by OS kernels, is to use the copy-on-write mechanism.  To allow
-implementation of the \lstinline`fork`-like emulation using the
-copy-on-write semantics, the embedding interface has to provide the
-\emph{backing store}. When used, all the process memory will be backed
-by a shared memory, thought initially not necessarily shared.
+copy the content of parent's address space. The efficient way,
+typically used by OS kernels, is to use the copy-on-write mechanism.
+To allow implementation of the \lstinline`fork`-like emulation using
+the copy-on-write semantics, the embedding interface has to provide a
+\emph{backing store} interface for allocating and managing shareable
+memory objects. Memory objects are either shared memory or files that
+can be memory mapped into the NaCl process. When used, all the process
+memory will be backed by shareable memory objects, though memory is
+not initially shared.
 
-When a new subprocess is created, it receives the shared memory
+When a new subprocess is created, it receives the memory object
 descriptors together with the location in the parent's process address
-space. Both parent and child processes have to change page protection of
-all memory pages to read-only to emulate copy-on-write, which is a
-responsibility of IRT. On fault, the affected page will be copied to a
-new shared memory which belongs to the subprocess, the reference count
-to the old page within the original shared memory object is decremented,
-the new shared memory pages are mapped in place of the original pages
-with write permissions, and the affected thread is continued.
+space. Both parent and child processes change page protection of all
+memory pages to read-only to emulate copy-on-write, which is a
+responsibility of the IRT. On fault, the affected page will be copied
+to a new shared memory which belongs to the subprocess, the reference
+count to the old page within the original shared memory object is
+decremented, the new shared memory pages are mapped in place of the
+original pages with write permissions, and the affected thread is
+continued.
 
-The backing store will be responsible for managing the shared memory,
-in particular (de)allocating the shared memory and automatic reference
-management. This is necessary since shared memory is potentially a
-scarce resource. There is also a space for optimizations. First, we do
-not want a separate shared memory file for every page (\eg limit on
-number of file descriptors, filesystem-related overhead), but if the
-shared memory object is multiple pages in size and a ``hole'' in the
-middle has zero references, we need to find a way to reclaim the space.
-Second, we have to make sure that the memory management is safe with
-respect to threads. This is not an issue on systems where altering the
-existing mapping can be done atomically, in particular on Linux and OS X
-(\ie \lstinline`mmap` on top of existing mapping).  However, on
-Windows where memory has to be unmapped first and therefore over-mapping
-is not atomic, we have to stop all threads while memory pages are being
-manipulated.
+The backing store interface is used by untrusted code to manage the
+shared memory, including deallocating the memory objects when they are
+no longer in use.  Since processes created with \lstinline`fork`
+execute in the same protection domain, misbehavior with respect to the
+\lstinline`fork`-emulation protocol is permissible as long as the
+effect is merely to cause memory corruption of NaCl subprocesses in
+the same domain or to cause resource leaks.
 
 %User-level fork emulation library manages address space.  All memory
 %are backed by shared memory, though initially not necessarily actually
